@@ -4,12 +4,13 @@ import {
 } from "https://deno.land/std/http/server.ts";
 import { readStringDelim } from "https://deno.land/std/io/mod.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
+import { resolve } from "https://deno.land/std@0.69.0/path/win32.ts";
 
 const server = serve({ port: 8000 });
 
 type EndpointHandler = (req: ServerRequest) => void;
 
-async function loadHtml(path: string): Promise<string> {
+async function loadAsset(path: string): Promise<string> {
   try {
     const filename = join(Deno.cwd(), path);
     let fileReader = await Deno.open(filename);
@@ -61,7 +62,7 @@ const app = createApp();
 
 app.router.register("/", async (req: ServerRequest) => {
   req.headers.append("Content-Type", "text/html");
-  req.respond({ body: await loadHtml("index.html") });
+  req.respond({ body: await loadAsset("index.html") });
 });
 
 app.router.register("/hello", (req: ServerRequest) => {
@@ -71,7 +72,12 @@ app.router.register("/hello", (req: ServerRequest) => {
 for await (const req of server) {
   if (app.router.routes[req.url]) {
     app.router.routes[req.url].callback(req);
+  } else if (req.url.endsWith('.css')) {
+    const css = await loadAsset(req.url) 
+    req.headers.append('Content-Type', 'text/css')
+    req.respond({ body: css })
   } else {
+    console.log(`[LOG]: 404 when requesting ${req.url}`)
     req.respond({ body: "404" });
   }
 }
