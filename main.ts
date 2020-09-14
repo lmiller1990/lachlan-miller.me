@@ -4,15 +4,25 @@ import {
 } from "https://deno.land/std/http/server.ts";
 import { readStringDelim } from "https://deno.land/std/io/mod.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
-import { resolve } from "https://deno.land/std@0.69.0/path/win32.ts";
 
 const server = serve({ port: 8000 });
 
 type EndpointHandler = (req: ServerRequest) => void;
 
+
+interface Config {
+  viewsDir: string
+}
+
+async function loadConfig(): Promise<Config> {
+  const text = await Deno.readTextFile('config.json')
+  return JSON.parse(text)
+}
+
 async function loadAsset(path: string): Promise<string> {
   try {
-    const filename = join(Deno.cwd(), path);
+    const config = await loadConfig()
+    const filename = join(Deno.cwd(), config.viewsDir, path);
     let fileReader = await Deno.open(filename);
 
     let content = "";
