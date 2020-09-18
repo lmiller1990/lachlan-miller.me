@@ -1,6 +1,7 @@
 import {
   ServerRequest,
 } from "https://deno.land/std/http/server.ts";
+import { listMusings, renderMusingsList } from "./models/musings.ts";
 import { loadAsset } from "./utils.ts";
 
 interface Replacer {
@@ -43,10 +44,21 @@ export const projects = async (req: ServerRequest) => {
   req.respond({ body });
 };
 
-export const musings = async (req: ServerRequest) => {
+export const screencasts = async (req: ServerRequest) => {
   req.headers.append("Content-Type", "text/html");
   const body = await render(
+    { replace: "{{content}}", with: "views/screencasts.html" },
+  );
+  req.respond({ body });
+};
+
+export const musings = async (req: ServerRequest) => {
+  req.headers.append("Content-Type", "text/html");
+  const musingsList = await listMusings("./src/musings")
+  const rendered = await renderMusingsList(musingsList)
+  const template = await render(
     { replace: "{{content}}", with: "views/musings.html" },
   );
+  const body = template.replace("{{posts}}", rendered)
   req.respond({ body });
 };

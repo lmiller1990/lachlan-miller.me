@@ -2,7 +2,7 @@ import {
   serve,
   ServerRequest,
 } from "https://deno.land/std/http/server.ts";
-import { root, articles, projects, musings } from "./src/controllers.ts";
+import { root, articles, projects, musings, screencasts } from "./src/controllers.ts";
 import { loadAsset } from "./src/utils.ts";
 
 const server = serve({ port: 8000 });
@@ -47,6 +47,7 @@ app.router.register("/", root);
 app.router.register("/articles", articles);
 app.router.register("/projects", projects);
 app.router.register("/musings", musings);
+app.router.register("/screencasts", screencasts);
 
 for await (const req of server) {
   if (app.router.routes[req.url]) {
