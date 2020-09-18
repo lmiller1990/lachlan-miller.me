@@ -1,0 +1,31 @@
+.bg-gunmetal {
+  background:#30343F;
+}
+.bg-ghost {
+  background:#FAFAFF;
+}
+.bg-lavender-blue {
+  background: #E4D9FF;
+}
+.bg-space-cadet-light {
+  background: #273469;
+}
+.bg-space-cadet-dark {
+  background: #1E2749;
+}
+
+.col-gunmetal {
+  color:#30343F;
+}
+.col-ghost {
+  color:#FAFAFF;
+}
+.col-lavender-blue {
+  color: #E4D9FF;
+}
+.col-space-cadet-light {
+  color: #273469;
+}
+.col-space-cadet-dark {
+  color: #1E2749;
+}

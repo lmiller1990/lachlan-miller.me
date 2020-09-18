@@ -2,39 +2,12 @@ import {
   serve,
   ServerRequest,
 } from "https://deno.land/std/http/server.ts";
-import { readStringDelim } from "https://deno.land/std/io/mod.ts";
-import { join } from "https://deno.land/std/path/mod.ts";
+import { root, articles, projects, musings } from "./src/controllers.ts";
+import { loadAsset } from "./src/utils.ts";
 
 const server = serve({ port: 8000 });
 
 type EndpointHandler = (req: ServerRequest) => void;
-
-
-interface Config {
-  viewsDir: string
-}
-
-async function loadConfig(): Promise<Config> {
-  const text = await Deno.readTextFile('config.json')
-  return JSON.parse(text)
-}
-
-async function loadAsset(path: string): Promise<string> {
-  try {
-    const config = await loadConfig()
-    const filename = join(Deno.cwd(), config.viewsDir, path);
-    let fileReader = await Deno.open(filename);
-
-    let content = "";
-    for await (let line of readStringDelim(fileReader, "\n")) {
-      content += line + "\n";
-    }
-
-    return content;
-  } catch (e) {
-    throw Error(e);
-  }
-}
 
 interface Route {
   path: string;
@@ -70,24 +43,20 @@ function createApp() {
 
 const app = createApp();
 
-app.router.register("/", async (req: ServerRequest) => {
-  req.headers.append("Content-Type", "text/html");
-  req.respond({ body: await loadAsset("index.html") });
-});
-
-app.router.register("/hello", (req: ServerRequest) => {
-  req.respond({ body: "hello world\n" });
-});
+app.router.register("/", root);
+app.router.register("/articles", articles);
+app.router.register("/projects", projects);
+app.router.register("/musings", musings);
 
 for await (const req of server) {
   if (app.router.routes[req.url]) {
     app.router.routes[req.url].callback(req);
-  } else if (req.url.endsWith('.css')) {
-    const css = await loadAsset(req.url) 
-    req.headers.append('Content-Type', 'text/css')
-    req.respond({ body: css })
+  } else if (req.url.endsWith(".css")) {
+    const css = await loadAsset(req.url);
+    req.headers.append("Content-Type", "text/css");
+    req.respond({ body: css });
   } else {
-    console.log(`[LOG]: 404 when requesting ${req.url}`)
+    console.log(`[LOG]: 404 when requesting ${req.url}`);
     req.respond({ body: "404" });
   }
 }
