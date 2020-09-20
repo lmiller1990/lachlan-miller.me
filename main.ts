@@ -1,34 +1,17 @@
 import {
   serve,
-  ServerRequest,
 } from "https://deno.land/std/http/server.ts";
-import { root, articles, projects, musings, screencasts } from "./src/controllers.ts";
+import {
+  root,
+  articles,
+  projects,
+  musings,
+  screencasts,
+} from "./src/controllers.ts";
+import { createRouter, EndpointHandler } from "./src/router.ts";
 import { loadAsset } from "./src/utils.ts";
 
 const server = serve({ port: 8000 });
-
-type EndpointHandler = (req: ServerRequest) => void;
-
-interface Route {
-  path: string;
-  method: "get" | "post";
-  callback: (req: ServerRequest) => void;
-}
-
-function createRouter() {
-  const routes: Record<string, Route> = {};
-
-  return {
-    routes,
-    register: (path: string, callback: EndpointHandler) => {
-      routes[path] = {
-        path,
-        method: "get",
-        callback,
-      };
-    },
-  };
-}
 
 function createApp() {
   const router = createRouter();

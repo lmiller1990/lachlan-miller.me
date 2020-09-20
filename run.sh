@@ -1,1 +1,1 @@
-denon run --allow-net --allow-env --allow-read --unstable main.ts  
+deno run --allow-net --allow-env --allow-read --unstable main.ts  

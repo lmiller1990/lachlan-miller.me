@@ -11,14 +11,14 @@ export async function listMusings(musingsDir: string) {
   return musings;
 }
 
-export async function renderMusingsList(paths: string[]): Promise<string> { 
-  let musings = '' 
-  const template = await loadAsset(`partials/musing.html`)
+export async function renderMusingsList(paths: string[]): Promise<string> {
+  let musings = "";
+  const template = await loadAsset(`partials/musing.html`);
   for await (const entry of paths) {
-    const text = await loadAsset(`musings/${entry}`)
-    const title = text.split("\n")
-    let content = template.replace('{{title}}', title[0]) + title[1]
-    musings += content
+    const text = await loadAsset(`musings/${entry}`);
+    const title = text.split("\n");
+    let content = template.replace("{{title}}", title[0]) + title[1];
+    musings += content;
   }
   return musings;
 }

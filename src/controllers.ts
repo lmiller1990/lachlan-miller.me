@@ -54,11 +54,11 @@ export const screencasts = async (req: ServerRequest) => {
 
 export const musings = async (req: ServerRequest) => {
   req.headers.append("Content-Type", "text/html");
-  const musingsList = await listMusings("./src/musings")
-  const rendered = await renderMusingsList(musingsList)
+  const musingsList = await listMusings("./src/musings");
+  const rendered = await renderMusingsList(musingsList);
   const template = await render(
     { replace: "{{content}}", with: "views/musings.html" },
   );
-  const body = template.replace("{{posts}}", rendered)
+  const body = template.replace("{{posts}}", rendered);
   req.respond({ body });
 };
