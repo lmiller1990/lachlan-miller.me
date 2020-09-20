@@ -13,14 +13,14 @@ async function loadConfig(): Promise<Config> {
 export async function loadAsset(path: string): Promise<string> {
   try {
     const config = await loadConfig();
-    const filename = join(Deno.cwd(), config.rootDir, path);
+    const filename = join(Deno.cwd(), config.rootDir, ...path.split("/"));
     let fileReader = await Deno.open(filename);
 
     let content = "";
     for await (let line of readStringDelim(fileReader, "\n")) {
       content += line + "\n";
     }
-
+    fileReader.close()
     return content;
   } catch (e) {
     console.log(`Could not load ${path}`);
