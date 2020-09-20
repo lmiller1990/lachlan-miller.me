@@ -6,7 +6,8 @@ import {
   articles,
   projects,
   musings,
-  screencasts,
+  screencasts, 
+  newWebsite
 } from "./src/controllers.ts";
 import { createRouter, EndpointHandler } from "./src/router.ts";
 import { loadAsset } from "./src/utils.ts";
@@ -30,6 +31,7 @@ app.router.register("/", root);
 app.router.register("/articles", articles);
 app.router.register("/projects", projects);
 app.router.register("/musings", musings);
+app.router.register("/musings/new-website", newWebsite);
 app.router.register("/screencasts", screencasts);
 
 for await (const req of server) {

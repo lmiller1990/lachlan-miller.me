@@ -52,6 +52,14 @@ export const screencasts = async (req: ServerRequest) => {
   req.respond({ body });
 };
 
+export const newWebsite = async (req: ServerRequest) => {
+  req.headers.append("Content-Type", "text/html");
+  const body = await render(
+    { replace: "{{content}}", with: "musings/new-website.html" },
+  );
+  req.respond({ body });
+};
+
 export const musings = async (req: ServerRequest) => {
   req.headers.append("Content-Type", "text/html");
   const musingsList = await listMusings("./src/musings");
