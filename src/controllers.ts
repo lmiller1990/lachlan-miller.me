@@ -15,8 +15,6 @@ interface Replacer {
 }
 async function render(replacer: Replacer): Promise<string> {
   try {
-    console.log(await loadAsset(replacer.with));
-
     const [template, content] = await Promise.all([
       loadAsset("templates/index.html"),
       loadAsset(replacer.with),
