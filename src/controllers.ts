@@ -2,7 +2,12 @@ import {
   ServerRequest,
 } from "https://deno.land/std/http/server.ts";
 import { listMusings, renderMusingsList } from "./models/musings.ts";
+import { processMeta } from "./router.ts";
 import { loadAsset } from "./utils.ts";
+
+export interface RequestMeta {
+  params: string[];
+}
 
 interface Replacer {
   replace: string;
@@ -10,6 +15,8 @@ interface Replacer {
 }
 async function render(replacer: Replacer): Promise<string> {
   try {
+    console.log(await loadAsset(replacer.with));
+
     const [template, content] = await Promise.all([
       loadAsset("templates/index.html"),
       loadAsset(replacer.with),
@@ -52,15 +59,24 @@ export const screencasts = async (req: ServerRequest) => {
   req.respond({ body });
 };
 
-export const newWebsite = async (req: ServerRequest) => {
+export const contact = async (req: ServerRequest) => {
   req.headers.append("Content-Type", "text/html");
   const body = await render(
-    { replace: "{{content}}", with: "musings/new-website.html" },
+    { replace: "{{content}}", with: "views/contact.html" },
   );
   req.respond({ body });
 };
 
-export const musings = async (req: ServerRequest) => {
+export const musingGet = async (req: ServerRequest) => {
+  const { params } = processMeta(req.url, /musings\/(.*)/);
+  req.headers.append("Content-Type", "text/html");
+  const body = await render(
+    { replace: "{{content}}", with: `musings/${params[0]}.html` },
+  );
+  req.respond({ body });
+};
+
+export const musings = async (req: ServerRequest, meta?: RequestMeta) => {
   req.headers.append("Content-Type", "text/html");
   const musingsList = await listMusings("./src/musings");
   const rendered = await renderMusingsList(musingsList);

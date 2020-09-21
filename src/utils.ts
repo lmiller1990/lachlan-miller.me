@@ -20,10 +20,10 @@ export async function loadAsset(path: string): Promise<string> {
     for await (let line of readStringDelim(fileReader, "\n")) {
       content += line + "\n";
     }
-    fileReader.close()
+    fileReader.close();
     return content;
   } catch (e) {
     console.log(`Could not load ${path}`);
-    throw Error(e);
+    return loadAsset("templates/404.html");
   }
 }
