@@ -8,7 +8,7 @@ import {
   musings,
   screencasts,
   musingGet, 
-  contact
+  contact, articleGet
 } from "./src/controllers.ts";
 import { createRouter, EndpointHandler } from "./src/router.ts";
 import { loadAsset } from "./src/utils.ts";
@@ -30,6 +30,7 @@ const app = createApp();
 
 app.router.register("/", root);
 app.router.register("/articles", articles);
+app.router.register(/articles\/(.*)/, articleGet);
 app.router.register("/projects", projects);
 app.router.register(/musings\/(.*)/, musingGet);
 app.router.register(/musings/, musings);
@@ -41,7 +42,7 @@ for await (const req of server) {
   if (route) {
     route.handler(req);
   } else if (req.url.endsWith(".css")) {
-    const css = await loadAsset(req.url);
+    const css = await loadAsset (req.url);
     req.headers.append("Content-Type", "text/css");
     req.respond({ body: css });
   } else {

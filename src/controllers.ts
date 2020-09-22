@@ -41,6 +41,15 @@ export const articles = async (req: ServerRequest) => {
   req.respond({ body });
 };
 
+export const articleGet = async (req: ServerRequest) => {
+  const { params } = processMeta(req.url, /articles\/(.*)/);
+  req.headers.append("Content-Type", "text/html");
+  const body = await render(
+    { replace: "{{content}}", with: `articles/${params[0]}.html` },
+  );
+  req.respond({ body });
+};
+
 export const projects = async (req: ServerRequest) => {
   req.headers.append("Content-Type", "text/html");
   const body = await render(
