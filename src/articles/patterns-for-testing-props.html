@@ -1,4 +1,45 @@
+<script>
+  function postEmail(payload) {
+    window.fetch('https://vuejs-course.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const $form = document.getElementById('subscribe')
+    $form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const $email = document.getElementById('email')
+      const $button = document.getElementById('email-submit')
+      $button.setAttribute('disabled', 'disabled')
+      await postEmail({ email: $email.value, referrer: 'lachlan-miller.me' })
+      $button.removeAttribute('disabled')
+      $button.textContent = 'Thanks!'
+    })
+  })
+</script>
+
+
 <h4> Patterns for Testing Props</h4><p>
+
+      <p>
+        <em>
+          This is a section from my upcoming book, Design Patterns for Testable Applications.
+          It uses Vue.js for the examples; but the ideas are framework agnostic.
+          You can submit your email to receive updates about my progress, previews, and a discounted price when it's released.
+        </em>
+      </p>
+      <form id="subscribe">
+        <label for="email">Email</label>
+        <input name="email" id="email" />
+        <button type="submit" id="email-submit">Submit</button>
+      </form>
+      <hr />
+
 In  this  section  we  explore   <code>props</code>,  and  the  kinds  of  tests  you  might  want  to  consider  writing.  This  leads  into  a  much  more  fundamental  and  important  topic;  drawing  a  clear  line  between  business  logic  and  UI,  also  known  as   <em>separation of concerns</em>,  and  how  your  tests  can  help  make  this  distinction  clear. </p><p>
 Consider  one  of  the  big  ideas  behind  frameworks  like  Vue  and  React: </p><blockquote> Your  user  interface  is  a  function  of  your  data. </blockquote><p>
 This  idea  comes  in  many  forms;  another  is  "data  driven  interfaces".  Basically,  your  UI  should  be  a  function  of  your  data.  Given  X  data,  your  UI  should  be  Y.  In  computer  science,  this  is  referred  to  as   <em>determinism</em>.  Another  name  for  this  a   <em>pure</em> system.  Take  the   <code>sum</code> function.  It  is  a   <em>pure</em> function: </p><pre data-line="undefined"><code>function sum(a, b) {
