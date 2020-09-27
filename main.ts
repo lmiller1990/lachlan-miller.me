@@ -7,8 +7,9 @@ import {
   projects,
   musings,
   screencasts,
-  musingGet, 
-  contact, articleGet
+  musingGet,
+  contact,
+  articleGet,
 } from "./src/controllers.ts";
 import { createRouter, EndpointHandler } from "./src/router.ts";
 import { loadAsset } from "./src/utils.ts";
@@ -38,15 +39,18 @@ app.router.register("/screencasts", screencasts);
 app.router.register("/contact", contact);
 
 for await (const req of server) {
-  const route = app.router.route(req.url);
-  if (route) {
-    route.handler(req);
-  } else if (req.url.endsWith(".css")) {
-    const css = await loadAsset (req.url);
-    req.headers.append("Content-Type", "text/css");
-    req.respond({ body: css });
-  } else {
-    console.log(`[LOG]: 404 when requesting ${req.url}`);
-    req.respond({ body: "404" });
+  try {
+    const route = app.router.route(req.url);
+    if (route) {
+      route.handler(req);
+    } else if (req.url.endsWith(".css")) {
+      const css = await loadAsset(req.url);
+      req.headers.append("Content-Type", "text/css");
+      req.respond({ body: css });
+    } else {
+      console.log(`[LOG]: 404 when requesting ${req.url}`);
+      req.respond({ body: "404" });
+    }
+  } catch (e) {
   }
 }
