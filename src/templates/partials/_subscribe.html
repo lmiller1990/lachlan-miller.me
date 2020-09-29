@@ -1,0 +1,37 @@
+<script>
+  function postEmail(payload) {
+    window.fetch('https://vuejs-course.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const $form = document.getElementById('subscribe')
+    $form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const $email = document.getElementById('email')
+      const $button = document.getElementById('email-submit')
+      $button.setAttribute('disabled', 'disabled')
+      await postEmail({ email: $email.value, referrer: 'lachlan-miller.me' })
+      $button.removeAttribute('disabled')
+      $button.textContent = 'Thanks!'
+    })
+  })
+</script>
+
+<p>
+  <em>
+    Like what you see? Sign up for updates on my book, Design Patterns for Testable Vue.js Applications.
+    Youl'll get updates, previews, and a discounted price when it's released.
+  </em>
+</p>
+<form id="subscribe">
+  <label for="email">Email</label>
+  <input name="email" id="email" />
+  <button type="submit" id="email-submit">Submit</button>
+</form>
+<hr />

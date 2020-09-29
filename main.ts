@@ -52,5 +52,6 @@ for await (const req of server) {
       req.respond({ body: "404" });
     }
   } catch (e) {
+    // ...
   }
 }
