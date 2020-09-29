@@ -1,0 +1,197 @@
+<h4> Emitting Events</h4><p>
+Vue's  primary  mechanic  for  passing  data   <em>down</em> to  components  is   <code>props</code>.  In  contrast,  when  components  needs  to  communicate  with  another  component  higher  in  the  hierachy,  you  do  so  by   <em>emitting events</em>,  with   <code>$emit</code>  (Options  API)  and   <code>emit</code>  (Composition  API) . </p><p>
+Let's  see  some  examples  on  how  this  works,  and  some  guidelines  we  can  set  to  keep  things  clean  and  understandable. </p><h4> Starting Simple</h4><p>
+Here  is  a  very  minimal  yet  perfectly  working   <code>&lt;Counter&gt;</code> component.  It's  by  no  means  ideal;  we  will  work  on  improving  it  by  the  end  of  this  section. </p><pre data-line="undefined"><code>&lt;template&gt;
+  &lt;button id="increment" @click="increment" /&gt;
+  &lt;button id="submit" @click="$emit('submit', count)" /&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+  data() {
+    return {
+      count: 0
+    }
+  },
+  methods: {
+    increment() {
+      this.count += 1
+    }
+  }
+}
+&lt;/script&gt;
+</pre></code><p>
+There  are  two  buttons;  one  increments  a   <code>count</code>,  the  other  emits  a   <code>submit</code> event  with  the  current  count.  Let's  write  a  simple  test  that  will  let  us  refactor  with  the  confidence  we  won't  break  anything.  As  with  the  other  examples,  this  one  uses  Vue  Test  Utils,  but  you  could  really  use  any  testing  framework  -  the  important  part  is  that  we  have  a  mechanism  to  let  us  know  if  we  break  something. </p><pre data-line="undefined"><code>import { mount } from '@vue/test-utils'
+import Counter from './counter.vue'
+
+describe('Counter', () =&gt; {
+  it('emits an event with the current count', async () =&gt; {
+    const wrapper = mount(Counter) 
+    await wrapper.find('#increment').trigger('click')
+    await wrapper.find('#submit').trigger('click')
+
+    console.log(wrapper.emitted())
+  })
+})
+</pre></code><p>
+I  did  a   <code>console.log(wrapper.emitted())</code> to  illustrate  how   <code>emitted</code> works  in  Vue  Test  Utils.  The  output  is  like  this: </p><pre data-line="undefined"><code>{ 
+  submit: [ 
+    [ 1 ] 
+  ] 
+}
+</pre></code><p><code>emitted</code> is  an  object  -  each  event  is  a  key,  and  it  maps  to  an  array  with  an  entry  for  each  time  the  event  was  emitted.   <code>emit</code> can  have  any  amount  of  arguments;  if  I  had  written   <code>$emit('submit', 1, 2, 3,)</code> the  output  would  be: </p><pre data-line="undefined"><code>{ 
+  submit: [ 
+    [ 1, 2, 3 ] 
+  ] 
+}
+</pre></code><p>
+Let's  add  an  assertion,  before  we  get  onto  the  main  topic:  best  practices  for  events. </p><pre data-line="undefined"><code>import { mount } from '@vue/test-utils'
+import Counter from './counter.vue'
+
+describe('Counter', () =&gt; {
+  it('emits an event with the current count', async () =&gt; {
+    const wrapper = mount(Counter) 
+    await wrapper.find('#increment').trigger('click')
+    await wrapper.find('#submit').trigger('click')
+    expect(wrapper.emitted().submit[0]).toEqual([1])
+  })
+})
+</pre></code><h4> Simple Templates</h4><p>
+We  discussed  previous  the  ideal  of   <em>simple templates</em>.  The  same  thing  applies  here;  we  want  to  avoid  calling   <code>$emit</code> in  the  template,  where  possible.  Let's  move  this  to  the   <code>&lt;script&gt;</code> section,  where  logic  belongs: </p><pre data-line="undefined"><code>&lt;template&gt;
+  &lt;button id="increment" @click="increment" /&gt;
+  &lt;button id="submit" @click="submit" /&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default {
+  data() {
+    return {
+      count: 0
+    }
+  },
+  methods: {
+    submit() {
+      this.$emit('submit', this.count)
+    },
+    increment() {
+      this.count += 1
+    }
+  }
+}
+&lt;/script&gt;
+</pre></code><p>
+Everything  still  passes.  This  points  to  a   <em>good test</em>.  Good  tests  are  resilient  to  refactors,  since  they  test  inputs  and  outputs,  not  implementation  details.   </p><blockquote> TIP:  Avoid  emitting  events  in  templates.  Move  the  logic  to  the  script  tag. </blockquote><p>
+Another  thing  you  may  have  notices  is  the   <em>name</em> of  the  method  we  created  -   <code>submit</code>.  This  is  a  personal  preference,  but  I  recommend  having  a  good  convention  around  naming  methods.  Here  are  two  I've  found  useful. </p><p>
+1.  Name  the  method  that  emits  the  event  the  same  as  the  event  name.  If  you  are  doing   <code>$emit('submit')</code>,  you  could  name  the  method  that  calls  this   <code>submit</code>,  too.   
+2.  Name  methods  that  emit  events   <code>handleXXX</code>.  In  this  example,  we  could  name  the  function   <code>handleSubmit</code>.  The  idea  is  those  methods   <em>handle</em> the  user  interactions. </p><p>
+The  one  you  choose  isn't  really  important;  having  a  convention  is  generally  a  good  thing,  though. </p><h4> Declaring emits </h4><p>
+As  of  Vue  3,  you  are  able  to   (and  encouraged  to)  declare  the  events  your  component  will  emit,  much  like  you  declare  props.  Failing  to  do  so  will  give  you  a  warning  in  the  browser  console:  <code>"Component  emitted  event  "event  name"  but  it  is  neither  declared  in  the  emits  option  nor  as  an  "event  name  prop"</code>.  This  can  make  it  easier  to  understand  what  your  component  does,  both  for  other  developers,  and  yourself  when  you  come  back  to  your  code-base  in  six  months  time. </p><p>
+You  can  do  this  in  the  same  way  you  declare  props;  using  the  array  of  strings  syntax: </p><pre data-line="undefined"><code>export default {
+  emits: ['submit']
+}
+</pre></code><p>
+Or  the  more  verbose  but  explicit  object  syntax: </p><pre data-line="undefined"><code>export default {
+  emits: {
+    submit: null 
+  }
+}
+</pre></code><p>
+The <code>null</code> here means "no validation". Yep - the  object  syntax  also  supports   <em>validation</em>, like <code>props</code>.  As  an  example,  we  could  validate  the  payload  is  a  number: </p><pre data-line="undefined"><code>export default {
+  emits: {
+    submit: (count) =&gt; {
+      return typeof count !== 'string' && !isNaN(count)
+    } 
+  },
+}
+</pre></code><h4> More Robust Event Validation</h4><p>
+Depending  on  your  application,  you  may  want  to  have  more  thorough  validation.  I  tend  to  favor  defensive  programming;  I  don't  like  taking  chances,  not  matter  how  unlikely  they  might  seem.  I  also  have  a  strong  emphasis  on  testing,  and  separation  of  concerns.  With  these  philosophies  in  mind,  let's  extract  this  validator,  make  it  more  robust,  and  add  some  tests. </p><p>
+The  first  step  is  to  move  the  validation  of  of  the  component  definition.  For  brevity,  I  am  just  going  to  export  it  from  the  component  file,  but  you  could  move  it  to  another  module  entirely   (for  example,  a   <code>validators</code> module) . </p><pre data-line="undefined"><code>&lt;script&gt;
+export function submitValidator(count) {
+  return typeof count !== 'string' && !isNaN(count)
+}
+
+export default {
+  emits: {
+    submit: submitValidator
+  },
+  data() {
+    return {
+      count: 0
+    }
+  },
+  methods: {
+    increment() {
+      this.count += 1
+    }
+  }
+}
+&lt;/script&gt;
+</pre></code><p>
+Another  convention  is  emerging: </p><blockquote> TIP:  Call  event  validators   <code>xxxValidator</code>. </blockquote><p>
+I  am  also  going  to  make  a  change  to   <code>submitValidator</code>;  the  argument   <em>must</em> be  a  number;  if  not,  bad  things  will  happen.  So  instead  of  waiting  for  bad  things  to  happen,  I  am  going  to  throw  an  error: </p><pre data-line="undefined"><code>export function submitValidator(count) {
+  if (typeof count === 'string' || isNaN(count)) {
+    throw Error(`
+        Count should have been a number.
+        Got: ${count}
+    `)
+  }
+  return true
+}
+</pre></code><p>
+Since   <code>submitValidator</code> is  just  a  plain  old  JavaScript  function,  and  a  pure  one  at  that,  it's  output  is  solely  dependant  on  it's  inputs.  This  means  writing  tests  is  trivial: </p><pre data-line="undefined"><code>describe('submitValidator', () =&gt; {
+  it('throws and error when count isNaN', () =&gt; {
+    const actual = () =&gt; submitValidator('1')
+    expect(actual).toThrow()
+  })
+
+  it('returns true when count is a number', () =&gt; {
+    const actual = () =&gt; submitValidator(1)
+    expect(actual).not.toThrow()
+  })
+})
+</pre></code><h4> With the Composition API </h4><p>
+The   <code>&lt;Counter&gt;</code> example  used  the  Options  API;  but  all  the  topics  discussed  here  translate  to  the  Composition  API  fine.  In  fact,  a  good  way  to  see  if  you  are  testing  inputs  and  outputs,  as  opposed  to  implementation  details,  is  to  refactor  your  component  from  the  Options  API  to  the  Composition  API,  or  vice  versa;  good  tests  are  resilient  to  refactor.  Let's  see  the  refactor: </p><pre data-line="undefined"><code>&lt;template&gt;
+  &lt;button id="increment" @click="increment" /&gt;
+  &lt;button id="submit" @click="submit" /&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export function submitValidator(count) {
+  if (typeof count === 'string' || isNaN(count)) {
+    throw Error(`
+        Count should have been a number.
+        Got: ${count}
+    `)
+  }
+  return true
+}
+
+import { ref } from 'vue'
+
+export default {
+  emits: {
+    submit: submitValidator
+  },
+  setup(props, { emit }) {
+    const count = ref(0)
+
+    const increment = () =&gt; {
+      count.value +=  1
+    }
+    const submit = () =&gt; {
+      emit('submit', count.value)
+    }
+
+    return {
+      count,
+      increment,
+      submit
+    }
+  }
+}
+&lt;/script&gt;
+</pre></code><p>
+Everything  still  passes  -  great  news. </p><h4> Conclusion</h4><p>
+We  discussed  emitting  events,  and  the  various  features  Vue  provides  to  keep  our  components  clean  and  testable.  We  also  covered  some  of  my  favorite  conventions  and  best  practices  to  keep  things  maintainable  in  the  long  run,  as  well  as  bring  consistency  to  your  code  base.   </p><p>
+Finally,  we  saw  how  our  tests  was  focused  on  inputs  and  outputs   (in  this  case,  the  input  is  the  user  interation  via  the  buttons,  and  the  output  is  the  emitted   <code>submit</code> event) . </p><p>
+We  touch  on  events  again  later  on,  in  the   <code>v-model</code> chapter  -  stay  tuned. </p>

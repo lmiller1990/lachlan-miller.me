@@ -76,6 +76,10 @@ em {
   font-style: italic;
 }
 
+hr {
+  margin: 20px 0;
+}
+
 button {
   border: 1px solid #cccccc;
   background: white;
