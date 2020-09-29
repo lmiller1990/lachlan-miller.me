@@ -82,8 +82,13 @@ export default {
 </pre></code><p>
 Everything  still  passes.  This  points  to  a   <em>good test</em>.  Good  tests  are  resilient  to  refactors,  since  they  test  inputs  and  outputs,  not  implementation  details.   </p><blockquote> TIP:  Avoid  emitting  events  in  templates.  Move  the  logic  to  the  script  tag. </blockquote><p>
 Another  thing  you  may  have  notices  is  the   <em>name</em> of  the  method  we  created  -   <code>submit</code>.  This  is  a  personal  preference,  but  I  recommend  having  a  good  convention  around  naming  methods.  Here  are  two  I've  found  useful. </p><p>
+  <p>
 1.  Name  the  method  that  emits  the  event  the  same  as  the  event  name.  If  you  are  doing   <code>$emit('submit')</code>,  you  could  name  the  method  that  calls  this   <code>submit</code>,  too.   
+</p>
+
+  <p>
 2.  Name  methods  that  emit  events   <code>handleXXX</code>.  In  this  example,  we  could  name  the  function   <code>handleSubmit</code>.  The  idea  is  those  methods   <em>handle</em> the  user  interactions. </p><p>
+</p>
 The  one  you  choose  isn't  really  important;  having  a  convention  is  generally  a  good  thing,  though. </p><h4> Declaring emits </h4><p>
 As  of  Vue  3,  you  are  able  to   (and  encouraged  to)  declare  the  events  your  component  will  emit,  much  like  you  declare  props.  Failing  to  do  so  will  give  you  a  warning  in  the  browser  console:  <code>"Component  emitted  event  "event  name"  but  it  is  neither  declared  in  the  emits  option  nor  as  an  "event  name  prop"</code>.  This  can  make  it  easier  to  understand  what  your  component  does,  both  for  other  developers,  and  yourself  when  you  come  back  to  your  code-base  in  six  months  time. </p><p>
 You  can  do  this  in  the  same  way  you  declare  props;  using  the  array  of  strings  syntax: </p><pre data-line="undefined"><code>export default {
