@@ -1,0 +1,15 @@
+extends ../shared/index.pug
+
+block content
+  p
+    | I write technical articles, mainly about Vue and other web technologies.
+    | Some other articles I wrote can be found on
+    | #[a(href='https://vuejs-course.com/blog') Vue.js Courses] and
+    | #[a(href='https://medium.com/@lachlanmiller_52885') Medium].
+  
+  each article in articles
+    h5
+      a(class='title-link' href=`/articles/${article.slug}`)=article.title 
+      span.color-grey.font-small=article.published
+    p=article.description
+

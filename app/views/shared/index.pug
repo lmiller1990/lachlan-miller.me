@@ -1,0 +1,25 @@
+doctype html
+head
+  meta(name='viewport' content='width=device-width, initial-scale=1')
+  meta(charset='UTF-8')
+  script(async='' defer='' data-domain='lachlan-miller.me' src='https://plausible.io/js/plausible.js')
+  style
+    include ../../public/reset.css
+    include ../../public/index.css
+  meta(name='description' content='Technical articles, projects and general musings about software by Lachlan Miller.')
+  title Lachlan Miller
+main.main
+  .profile
+    div
+      a(href='/')
+        img.profile__image(src='https://avatars2.githubusercontent.com/u/19196536?s=460&u=8fc5c9d3a010264b51d56049df87a6d229c9a64d&v=4')
+    div
+      h3
+        a.plain-link(href='/') Lachlan Miller
+      a.link(href='/articles') Articles
+      a.link(href='/screencasts') Screencasts
+      a.link(href='/projects') Projects
+      a.link(href='/musings') Musings
+      a.link(href='/contact') Contact
+  .content
+    block content
