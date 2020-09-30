@@ -6,9 +6,10 @@ const router = Router()
 
 router.use('/articles/:slug', (req: Request, res: Response) => {
   const content = fs.readFileSync(`./app/public/articles/${req.params.slug}.html`)
-  res.render('articles/show', { content })
+  const article = articles.find(x => x.slug === req.params.slug)
+  console.log(article)
+  res.render('articles/show', { content, article })
 })
-
 
 router.use('/articles', (req: Request, res: Response) => {
   res.render('articles/index', { articles })
