@@ -17,5 +17,11 @@ export const articles: Article[] = [
     slug: "consistently-and-reliably-emitting-events",
     published: "2020-09-29",
     description: "Some patterns, tips and tricks for consistency and reliability when emitting events in Vue components.",
+  },
+  {
+    title: "Writing Testable Forms",
+    slug: "writing-testable-forms",
+    published: "2020-10-08",
+    description: "Write more testable and reliable forms by isolating the business logic from the UI layer.",
   }
 ]

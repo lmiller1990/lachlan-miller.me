@@ -12,7 +12,7 @@ router.use('/articles/:slug', (req: Request, res: Response) => {
 })
 
 router.use('/articles', (req: Request, res: Response) => {
-  res.render('articles/index', { articles })
+  res.render('articles/index', { articles: articles.reverse() })
 })
 
 router.use('/projects', (req: Request, res: Response) => {
@@ -30,6 +30,10 @@ res.render('musings/show', { content })
 
 router.use('/musings', (req: Request, res: Response) => {
   res.render('musings/index')
+})
+
+router.use('/screencasts', (req: Request, res: Response) => {
+  res.render('screencasts/index')
 })
 
 router.use('/', (req: Request, res: Response) => {

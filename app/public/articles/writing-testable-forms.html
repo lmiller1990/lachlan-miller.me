@@ -1,0 +1,440 @@
+<h4 class="code-line" data-line-start=0 data-line-end=1 ><a id="Writing_Good_Forms_0"></a>Writing Testable Forms</h4>
+<p class="has-line-data" data-line-start="2" data-line-end="3">Forms are the primary way a user enters information into any web based system, so getting them right is important. The focus on this section will be on forms, specifially <em>writing good forms</em>. 
+</p>
+  
+<blockquote>Find the completed source code (including exercises) <a href="https://gist.github.com/lmiller1990/4a15e496772802b213608111590a1221">here</a>.
+</blockquote>
+<p>
+  What exactly is a <em>good</em> form?</p>
+  <p>
+   We want to ensure the form logic is decoupled from the Vue components - this will let us test in isolation. We also need to think about validation. In traditional server rendered apps, you would only get validation after submitting the form - not really a great user experience. Vue makes client side validation trivial, so we will make use of this and implement two levels of validation:</p>
+<ol>
+<li class="has-line-data" data-line-start="4" data-line-end="5">field validation - if a user enters incorrect in invalid data in a single field, we will show an error immediately.</li>
+<li class="has-line-data" data-line-start="5" data-line-end="7">form validation - the submit button should only be enabled when the entire form is correctly filled out.</li>
+</ol>
+<p class="has-line-data" data-line-start="7" data-line-end="8">Finally, we need two levels of tests. The first is around the business logic; given some form, which fields are invalid, and when is the form considered complete? The second is around interactions - ensuring that the UI layer is working correctly, and that the user can enter data, see error messages, and correctly submit the form.</p>
+<h4 class="code-line" data-line-start=9 data-line-end=10 ><a id="The_Patient_Form_9"></a>The Patient Form</h4>
+<p class="has-line-data" data-line-start="11" data-line-end="12">For this example, we are building a form to enter patient data for a hospital application. The form will look like this:</p>
+<h4>Dirty State with Errors and Validation</h4>
+<img src="https://raw.githubusercontent.com/lmiller1990/design-pattenrns-for-vuejs/master/images/forms-dirty.png" alt=""></p>
+<h4>Clean State - Form is Valid</h4>
+<p class="has-line-data" data-line-start="13" data-line-end="15"><img src="https://raw.githubusercontent.com/lmiller1990/design-pattenrns-for-vuejs/master/images/forms-clean.png" alt=""><br>
+<p class="has-line-data" data-line-start="16" data-line-end="17">There are two inputs. The first is the patient name, which is required and can be any text. The second is the patient weight, which can be in imperial or metric units. The constraints are as follows:</p>
+<table class="table table-striped table-bordered">
+<thead>
+<tr>
+<th>x</th>
+<th>Min</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Imperial</td>
+<td>66</td>
+<td>440</td>
+</tr>
+<tr>
+<td>Metric</td>
+<td>30</td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+<p class="has-line-data" data-line-start="23" data-line-end="24">We could define those using an object:</p>
+<pre><code class="has-line-data" data-line-start="26" data-line-end="31" class="language-js"><span class="hljs-keyword">const</span> limits = {
+  kg: { min: <span class="hljs-number">30</span>, max: <span class="hljs-number">200</span> },
+  lb: { min: <span class="hljs-number">66</span>, max: <span class="hljs-number">440</span> }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="32" data-line-end="33">The submit button should only be enabled if both inputs are valid. Finally, we should show validation for each field.</p>
+<h4 class="code-line" data-line-start=34 data-line-end=35 ><a id="A_Mini_Form_Validation_Framework_34"></a>A Mini Form Validation Framework</h4>
+<p class="has-line-data" data-line-start="36" data-line-end="37">There are plenty of full-featured Vue (and non-Vue) form validation frameworks out there. For this simple example, we will write our own. We have two types of validations: a required field (the patient name) and a required field with specific constraints (the weight field). We also want to return an error message, if the input is not valid. This will help guide the user.</p>
+<p class="has-line-data" data-line-start="38" data-line-end="39">We need two validation functions: <code>required</code> and <code>isBetween</code>. While TDD isn’t always the right tool, for these two functions I believe it is. We know the inputs and outputs, and all the possible states of the system.</p>
+<p class="has-line-data" data-line-start="40" data-line-end="41">so let’s go ahead and write some tests, starting with <code>required</code>. Each validator will return an object with the validation status, and a message if there is an error. Using a TypeScript <code>interface</code> to notation purposes:</p>
+<pre><code class="has-line-data" data-line-start="43" data-line-end="48" class="language-js">interface ValidationResult {
+  valid: boolean
+  messsage?: string
+}
+</code></pre>
+<p class="has-line-data" data-line-start="49" data-line-end="50">Now we’ve settled on our validation API, here are the tests for <code>required</code>.</p>
+<h4 class="code-line" data-line-start=51 data-line-end=52 ><a id="The_required_validator_51"></a>The <code>required</code> validator</h4>
+<pre><code class="has-line-data" data-line-start="55" data-line-end="73" class="language-js"><span class="hljs-keyword">import</span> {
+  required,
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./form.js'</span>
+
+describe(<span class="hljs-string">'required'</span>, () =&gt; {
+  it(<span class="hljs-string">'is invalid when undefined'</span>, () =&gt; {
+    expect(required(undefined)).toEqual({ valid: false, message: <span class="hljs-string">'Required'</span> })
+  })
+
+  it(<span class="hljs-string">'is invalid when empty string'</span>, () =&gt; {
+    expect(required(<span class="hljs-string">''</span>)).toEqual({ valid: false, message: <span class="hljs-string">'Required'</span> })
+  })
+
+  it(<span class="hljs-string">'returns true false value is present'</span>, () =&gt; {
+    expect(required(<span class="hljs-string">'some value'</span>)).toEqual({ valid: true })
+  })
+})
+</code></pre>
+<p class="has-line-data" data-line-start="74" data-line-end="75">Basically, anything that is not truthy is invalid; anything else is considered valid. We can get all the tests passing with this implementation:</p>
+<pre><code class="has-line-data" data-line-start="77" data-line-end="88" class="language-js"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">required</span>(<span class="hljs-params">value</span>) </span>{
+  <span class="hljs-keyword">if</span> (!value) {
+    <span class="hljs-keyword">return</span> {
+      valid: <span class="hljs-literal">false</span>,
+      message: <span class="hljs-string">'Required'</span>
+    }
+  }
+
+  <span class="hljs-keyword">return</span> { valid: <span class="hljs-literal">true</span> }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="89" data-line-end="90">I like to put the invalid case first for my validators - that’s just a personal preference.</p>
+<h4 class="code-line" data-line-start=91 data-line-end=92 ><a id="The_isBetween_validator_91"></a>The <code>isBetween</code> validator</h4>
+<p class="has-line-data" data-line-start="93" data-line-end="94"><code>isBetween</code> is a bit more interesting. We need to support imperial and metric; we will build another function on top of <code>isBetween</code> that will pass in the correct constraints.</p>
+<p class="has-line-data" data-line-start="95" data-line-end="96">Let’s start by identifying all the edge cases. If the minimum weight is 66 lb and the maximum weight is 440 lb, obviously 65 lb and 441 lb are invalid. 66 lb and 440 lb are valid, however, so we should make sure we add tests for those cases. This means we need 5 tests; the happy path, where the input is valid, above/below the constraints, and equal to the minimum and maximum constraint.</p>
+<p class="has-line-data" data-line-start="97" data-line-end="98">We assume that only numbers can be passed as the input value; this validation is something we will handle at a higher level.</p>
+<pre><code class="has-line-data" data-line-start="100" data-line-end="129" class="language-js"><span class="hljs-keyword">import</span> {
+  required,
+  isBetween
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./form.js'</span>
+
+// ...
+
+describe(<span class="hljs-string">'isBetween'</span>, () =&gt; {
+  it(<span class="hljs-string">'returns true when value is equal to min'</span>, () =&gt; {
+    expect(isBetween(5, { min: 5, max: 10 })).toEqual({ valid: true })
+  })
+
+  it(<span class="hljs-string">'returns true when value is between min/max'</span>, () =&gt; {
+    expect(isBetween(7, { min: 5, max: 10 })).toEqual({ valid: true })
+  })
+
+  it(<span class="hljs-string">'returns true when value is equal to max'</span>, () =&gt; {
+    expect(isBetween(10, { min: 5, max: 10 })).toEqual({ valid: true })
+  })
+
+  it(<span class="hljs-string">'returns false when value is less than min'</span>, () =&gt; {
+    expect(isBetween(4, { min: 5, max: 10 })).toEqual({ valid: false, message: <span class="hljs-string">'Must be between 5 and 10'</span> })
+  })
+
+  it(<span class="hljs-string">'returns false when value is greater than max'</span>, () =&gt; {
+    expect(isBetween(11, { min: 5, max: 10 })).toEqual({ valid: false, message: <span class="hljs-string">'Must be between 5 and 10'</span> })
+  })
+})
+</code></pre>
+<p class="has-line-data" data-line-start="130" data-line-end="131">I think the tests are simple enough to have everything in a single <code>expect</code> statement. If the tests were more complex, I’d probably assign the result of <code>isBetween()</code> to a variable (I like to call it <code>actual</code>) and pass that to the <code>expect</code> assertion.</p>
+<p class="has-line-data" data-line-start="132" data-line-end="133">The implementation is much less code than the tests; this is not unusual.</p>
+<pre><code class="has-line-data" data-line-start="135" data-line-end="146" class="language-js"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isBetween</span>(<span class="hljs-params">value, { min, max }</span>) </span>{
+  <span class="hljs-keyword">if</span> (value &lt; min || value &gt; max) {
+    <span class="hljs-keyword">return</span> {
+      valid: <span class="hljs-literal">false</span>,
+      message: <span class="hljs-string">`Must be between <span class="hljs-subst">${min}</span> and <span class="hljs-subst">${max}</span>`</span>
+    }
+  }
+
+  <span class="hljs-keyword">return</span> { valid: <span class="hljs-literal">true</span> }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="147" data-line-end="148">Again, I like to have the validation at the start of the function.</p>
+<h4 class="code-line" data-line-start=149 data-line-end=150 ><a id="Building_validateMeasurement_with_isBetween_149"></a>Building <code>validateMeasurement</code> with <code>isBetween</code></h4>
+<p class="has-line-data" data-line-start="151" data-line-end="152">Now we have written our little validation framework (well, two functions), it’s time to validate the patient weight. We will build a <code>validateMeasurement</code> function using <code>isBetween</code> and <code>required</code>. Since we are supporting imperial and metric, we will be passing the constraints as an argument - dealing with which one is selected will be later on, in the UI layer. We will want three tests: the happy path, when the value is valid, a test for a null value, and for a value outside the constraints. I don’t feel the need to add tests for all the cases like we did with <code>isBetween</code>, since we already tested that.</p>
+<pre><code class="has-line-data" data-line-start="154" data-line-end="176" class="language-js"><span class="hljs-keyword">import</span> {
+  required,
+  isBetween,
+  validateMeasurement
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./form.js'</span>
+
+// ...
+
+describe(<span class="hljs-string">'validateMeasurement'</span>, () =&gt; {
+  it(<span class="hljs-string">'returns invalid for input'</span>, () =&gt; {
+    const constraints = { min: 10, max: 30 }
+    const actual = validateMeasurement(undefined, { constraints, nullable: false })
+    expect(actual).toEqual({ valid: false, message: <span class="hljs-string">'Required'</span> })
+  })
+
+  it(<span class="hljs-string">'returns invalid when outside range'</span>, () =&gt; {
+    const constraints = { min: 10, max: 30 }
+    const actual = validateMeasurement(40, { constraints, nullable: false })
+    expect(actual).toEqual({ valid: false, message: <span class="hljs-string">'Must be between 10 and 30'</span> })
+  })
+})
+</code></pre>
+<p class="has-line-data" data-line-start="177" data-line-end="178">Since the test is a bit more complex, I decided to assign the result to <code>actual</code>, and assert against that. I think this makes it more clear. We don’t need to use the specific constraints outlined in the table earlier; as long as the tests pass with the constraints we pass in here, we can be confident <code>validateMeasurement</code> will work correctly for any given set of <code>min/max</code> constraints.</p>
+<p class="has-line-data" data-line-start="179" data-line-end="180">As you might expect, the implementation is much shorter than the test code:</p>
+<pre><code class="has-line-data" data-line-start="182" data-line-end="191" class="language-js"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">validateMeasurement</span>(<span class="hljs-params">value, { constraints }</span>) </span>{
+  <span class="hljs-keyword">const</span> result = required(value)
+  <span class="hljs-keyword">if</span> (!result.valid) {
+    <span class="hljs-keyword">return</span> result
+  }
+
+  <span class="hljs-keyword">return</span> isBetween(value, constraints)
+}
+</code></pre>
+<p class="has-line-data" data-line-start="192" data-line-end="193">Nice! We were able to reuse <code>required</code> and <code>isBetween</code>.</p>
+<h4 class="code-line" data-line-start=194 data-line-end=195 ><a id="The_Form_Object_and_Full_Form_Validation_194"></a>The Form Object and Full Form Validation</h4>
+<p class="has-line-data" data-line-start="196" data-line-end="197">We have completed all the validations for each field. Let’s think about the shape of the form, now. We have two fields: <code>name</code> and <code>weight</code>. <code>name</code> is a string, and weight is a number with associated units. This is the <em>input</em>. Again, using TypeScript for notation:</p>
+<pre><code class="has-line-data" data-line-start="199" data-line-end="215" class="language-js">interface PatientFormState {
+  name: string
+  weight: {
+    value: number
+    units: <span class="hljs-string">'kg'</span> | <span class="hljs-string">'lb'</span>
+  }
+}
+
+<span class="hljs-keyword">const</span> patientForm: PatientFormState = {
+  name: <span class="hljs-string">'John'</span>,
+  weight: {
+    value: <span class="hljs-number">445</span>,
+    units: <span class="hljs-string">'lb'</span>
+  }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="216" data-line-end="217">Given an input (a <code>patientForm</code>), we can valid each field. Fields when validated are either <code>{ valid: true }</code> or <code>{ valid: false, message: '...' }</code>. So the form and validity interfaces could look like this (again, using TypeScript for notation):</p>
+<pre><code class="has-line-data" data-line-start="220" data-line-end="241" class="language-js">interface PatientFormValidity {
+  name: ValidationResult
+  weight: ValidationResult
+}
+
+<span class="hljs-keyword">const</span> patientForm: PatientFormState = {
+  name: <span class="hljs-string">'John'</span>,
+  weight: {
+    value: <span class="hljs-number">445</span>,
+    units: <span class="hljs-string">'lb'</span>
+  }
+}
+
+<span class="hljs-keyword">const</span> validState = validateForm(patientForm)
+<span class="hljs-comment">// Result should be:</span>
+<span class="hljs-comment">// {</span>
+<span class="hljs-comment">//   name: { valid: true }</span>
+<span class="hljs-comment">//   weight: { valid: false, message: 'Must be between 66 and 440' }</span>
+<span class="hljs-comment">// }</span>
+
+</code></pre>
+<p class="has-line-data" data-line-start="242" data-line-end="243">We will need two functions: <code>isFormValid</code>, to tell us if the form is valid or not, and <code>patientForm</code>, which handles figuring out the correct weight units, and calling all the validators. Let’s start with the tests for <code>isFormValid</code>. The form is considered valid when all fields are <code>valid</code>, so we only need two tests: the case where all fields are valid, and the case where at least one field is not:</p>
+<pre><code class="has-line-data" data-line-start="245" data-line-end="274" class="language-js"><span class="hljs-keyword">import</span> {
+  required,
+  isBetween,
+  validateMeasurement,
+  isFormValid
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./form.js'</span>
+
+// ...
+
+describe(<span class="hljs-string">'isFormValid'</span>, () =&gt; {
+  it(<span class="hljs-string">'returns true when name and weight field are valid'</span>, () =&gt; {
+    const form = {
+      name: { valid: true },
+      weight: { valid: true }
+    }
+
+    expect(isFormValid(form)).toBe(true)
+  })
+
+  it(<span class="hljs-string">'returns false when any field is invalid'</span>, () =&gt; {
+    const form = {
+      name: { valid: false },
+      weight: { valid: true }
+    }
+
+    expect(isFormValid(form)).toBe(false)
+  })
+})
+</code></pre>
+<p class="has-line-data" data-line-start="275" data-line-end="276">The implementation is as simple as you might expect:</p>
+<pre><code class="has-line-data" data-line-start="278" data-line-end="282" class="language-js"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isFormValid</span>(<span class="hljs-params">form</span>) </span>{
+  <span class="hljs-keyword">return</span> form.name.valid &amp;&amp; form.weight.valid
+}
+</code></pre>
+<p class="has-line-data" data-line-start="283" data-line-end="284">You could get fancy and iterate over the <code>form</code> using <code>Object.keys</code> or <code>Object.entries</code> if you were building a more generic form validation library; in this case we aren’t, so I am keeping it as simple as possible.</p>
+<p class="has-line-data" data-line-start="285" data-line-end="286">The last test we need to complete the business logic is <code>patientForm</code>. This function takes an object with the <code>PatientFormState</code> shape we defined earlier and returns the validation result of each field. We will want to have a quite a few tests here, to make sure we don’t miss anything. The cases I can think of are:</p>
+<ol>
+<li class="has-line-data" data-line-start="287" data-line-end="288">Happy path: all inputs are valid</li>
+<li class="has-line-data" data-line-start="288" data-line-end="289">Patient name is null</li>
+<li class="has-line-data" data-line-start="289" data-line-end="290">Patient weight is outside constraints (imperial)</li>
+<li class="has-line-data" data-line-start="290" data-line-end="292">Patient weight is outside constraints (metric)</li>
+</ol>
+<pre><code class="has-line-data" data-line-start="293" data-line-end="345" class="language-js"><span class="hljs-keyword">import</span> {
+  required,
+  isBetween,
+  validateMeasurement,
+  isFormValid,
+  patientForm
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./form.js'</span>
+
+// ...
+
+describe(<span class="hljs-string">'patientForm'</span>, () =&gt; {
+  const validPatient = {
+    name: <span class="hljs-string">'test patient'</span>,
+    weight: { value: 100, units: <span class="hljs-string">'kg'</span> }
+  }
+
+  it(<span class="hljs-string">'is valid when form is filled out correctly'</span>, () =&gt; {
+    const form = patientForm(validPatient)
+    expect(form.name).toEqual({ valid: true })
+    expect(form.weight).toEqual({ valid: true })
+  })
+
+  it(<span class="hljs-string">'is invalid when name is null'</span>, () =&gt; {
+    const form = patientForm({ ...validPatient, name: <span class="hljs-string">''</span> })
+    expect(form.name).toEqual({ valid: false, message: <span class="hljs-string">'Required'</span> })
+  })
+
+  it(<span class="hljs-string">'validates weight in imperial'</span>, () =&gt; {
+    const form = patientForm({ 
+      ...validPatient, 
+      weight: { 
+        value: 65, 
+        units: <span class="hljs-string">'lb'</span> 
+      }
+    })
+
+    expect(form.weight).toEqual({ valid: false, message: <span class="hljs-string">'Must be between 66 and 440'</span> })
+  })
+
+  it(<span class="hljs-string">'validates weight in metric'</span>, () =&gt; {
+    const form = patientForm({ 
+      ...validPatient, 
+      weight: { 
+        value: 29, 
+        units: <span class="hljs-string">'kg'</span> 
+      }
+    })
+
+    expect(form.weight).toEqual({ valid: false, message: <span class="hljs-string">'Must be between 30 and 200'</span> })
+  })
+})
+</code></pre>
+<p class="has-line-data" data-line-start="346" data-line-end="347">The test code is quite long. Thankfully, the implementation is trivial. In this example, I am just hard-coding the weight constraints in an object called <code>limits</code>; in a real world system, you’d likely get these from an API and pass them down to the <code>patientForm</code> function.</p>
+<pre><code class="has-line-data" data-line-start="349" data-line-end="368" class="language-js"><span class="hljs-keyword">const</span> limits = {
+  kg: { min: <span class="hljs-number">30</span>, max: <span class="hljs-number">200</span> },
+  lb: { min: <span class="hljs-number">66</span>, max: <span class="hljs-number">440</span> },
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">patientForm</span>(<span class="hljs-params">patient</span>) </span>{
+  <span class="hljs-keyword">const</span> name = required(patient.name)
+
+  <span class="hljs-keyword">const</span> weight = validateMeasurement(patient.weight.value, {
+    nullable: <span class="hljs-literal">false</span>,
+    constraints: limits[patient.weight.units]
+  })
+
+  <span class="hljs-keyword">return</span> {
+    name,
+    weight
+  }
+}
+</code></pre>
+<p class="has-line-data" data-line-start="369" data-line-end="370">This completes the business logic for the patient form - noticed we haven’t written and Vue components yet? That’s because we are sticking to one of our goals; <em>separation of concerns</em>, and isolating the business logic entirely.</p>
+<h4 class="code-line" data-line-start=371 data-line-end=372 ><a id="Writing_the_UI_Layer_371"></a>Writing the UI Layer</h4>
+<p class="has-line-data" data-line-start="373" data-line-end="374">Now the fun part - writing the UI layer with Vue. Although I think TDD is a great fit for business logic, I prefer to write the tests for my components after the fact generally, although this doesn’t follow the hardcore TDD mantra.</p>
+<p class="has-line-data" data-line-start="375" data-line-end="376">I like to start by thinking abou how I will manage the state of my component. Let’s use the composition API; I think it lends itself well to forms.</p>
+<pre><code class="has-line-data" data-line-start="379" data-line-end="405" class="language-html"><span class="hljs-tag">&lt;<span class="hljs-title">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { reactive, computed, ref } <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+<span class="hljs-keyword">import</span> { patientForm, isFormValid } <span class="hljs-keyword">from</span> <span class="hljs-string">'./form.js'</span>
+
+export default {
+  setup() {
+    const form = reactive({
+      name: <span class="hljs-string">''</span>,
+      weight: {
+        value: <span class="hljs-string">''</span>,
+        units: <span class="hljs-string">'kg'</span>
+      }
+    })
+
+    const validatedForm = computed(() =&gt; patientForm(form))
+    const valid = computed(() =&gt; isFormValid(validatedForm.value))
+
+    return {
+      form,
+      validatedForm,
+      valid,
+    }
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+</code></pre>
+<p class="has-line-data" data-line-start="406" data-line-end="407">I decided to keep the state in a <code>reactive</code> object. Both the <code>valid</code> state and <code>validateForm</code> are <code>computed</code> values - we want the validation and form state to update reactively when any value in the form changes.</p>
+<p class="has-line-data" data-line-start="408" data-line-end="409">Let’s add the <code>&lt;template&gt;</code> part now - it’s very simple, just good old HTML.</p>
+<pre><code class="has-line-data" data-line-start="411" data-line-end="448" class="language-html"><span class="hljs-tag">&lt;<span class="hljs-title">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">h3</span>&gt;</span>Patient Data<span class="hljs-tag">&lt;/<span class="hljs-title">h3</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">form</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"field"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">v-if</span>=<span class="hljs-value">"!validatedForm.name.valid"</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"error"</span>&gt;</span>
+        {{ validatedForm.name.message }}
+      <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">label</span> <span class="hljs-attribute">for</span>=<span class="hljs-value">"name"</span>&gt;</span>Name<span class="hljs-tag">&lt;/<span class="hljs-title">label</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">input</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"name"</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"name"</span> <span class="hljs-attribute">v-model</span>=<span class="hljs-value">"form.name"</span> /&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"field"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">v-if</span>=<span class="hljs-value">"!validatedForm.weight.valid"</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"error"</span>&gt;</span>
+        {{ validatedForm.weight.message }}
+      <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">label</span> <span class="hljs-attribute">for</span>=<span class="hljs-value">"weight"</span>&gt;</span>Weight<span class="hljs-tag">&lt;/<span class="hljs-title">label</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">input</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"weight"</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"weight"</span> <span class="hljs-attribute">v-model.number</span>=<span class="hljs-value">"form.weight.value"</span> /&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">select</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">"weightUnits"</span> <span class="hljs-attribute">v-model</span>=<span class="hljs-value">"form.weight.units"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">option</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"kg"</span>&gt;</span>kg<span class="hljs-tag">&lt;/<span class="hljs-title">option</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">option</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">"lb"</span>&gt;</span>lb<span class="hljs-tag">&lt;/<span class="hljs-title">option</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-title">select</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">class</span>=<span class="hljs-value">"field"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">button</span> <span class="hljs-attribute">:disabled</span>=<span class="hljs-value">"!valid"</span>&gt;</span>Submit<span class="hljs-tag">&lt;/<span class="hljs-title">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">form</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">pre</span>&gt;</span>
+Patient Data
+{{ form }}
+<span class="hljs-tag">&lt;/<span class="hljs-title">pre</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-title">br</span> /&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-title">pre</span>&gt;</span>
+Form State
+{{ validatedForm }}
+<span class="hljs-tag">&lt;/<span class="hljs-title">pre</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-title">template</span>&gt;</span>
+</code></pre>
+<p class="has-line-data" data-line-start="449" data-line-end="450">I added the <code>&lt;pre&gt;</code> block for some debugging. Everything works!</p>
+<img src="https://raw.githubusercontent.com/lmiller1990/design-pattenrns-for-vuejs/master/images/forms-clean.png" alt=""></p>
+<h4 class="code-line" data-line-start=453 data-line-end=454 ><a id="Some_Basic_UI_Tests_453"></a>Some Basic UI Tests</h4>
+<p class="has-line-data" data-line-start="455" data-line-end="456">We can add some basic UI tests using Vue Test Utils, too. Here are two fairly simple ones that cover most of the functionality:</p>
+<pre><code class="has-line-data" data-line-start="458" data-line-end="483" class="language-js"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">'@vue/test-utils'</span>
+<span class="hljs-keyword">import</span> FormValidation <span class="hljs-keyword">from</span> <span class="hljs-string">'./form-validation.vue'</span>
+
+describe(<span class="hljs-string">'FormValidation'</span>, () =&gt; {
+  it(<span class="hljs-string">'fills out form correctly'</span>, async () =&gt; {
+    const wrapper = mount(FormValidation)
+
+    await wrapper.find(<span class="hljs-string">'#name'</span>).setValue(<span class="hljs-string">'lachlan'</span>)
+    await wrapper.find(<span class="hljs-string">'#weight-units'</span>).setValue(<span class="hljs-string">'lb'</span>)
+    await wrapper.find(<span class="hljs-string">'#weight'</span>).setValue(<span class="hljs-string">'150'</span>)
+
+    expect(wrapper.findAll(<span class="hljs-string">'.error'</span>)).toHaveLength(0)
+  })
+
+  it(<span class="hljs-string">'shows errors for invalid inputs'</span>, async () =&gt; {
+    const wrapper = mount(FormValidation)
+
+    await wrapper.find(<span class="hljs-string">'#name'</span>).setValue(<span class="hljs-string">''</span>)
+    await wrapper.find(<span class="hljs-string">'#weight-units'</span>).setValue(<span class="hljs-string">'lb'</span>)
+    await wrapper.find(<span class="hljs-string">'#weight'</span>).setValue(<span class="hljs-string">'50'</span>)
+
+    expect(wrapper.findAll(<span class="hljs-string">'.error'</span>)).toHaveLength(2)
+  })
+})
+</code></pre>
+<p class="has-line-data" data-line-start="484" data-line-end="485">We don’t have any tests to ensure the <code>&lt;button&gt;</code> is correctly disabled - see below for more.</p>
+<h4 class="code-line" data-line-start=486 data-line-end=487 ><a id="Impovements_and_Conclusion_486"></a>Impovements and Conclusion</h4>
+<p class="has-line-data" data-line-start="488" data-line-end="489">The goal here wasn’t to build the <em>perfect</em> form, but illustrate how to separeate your form validation and business logic from the UI layer.</p>
+<p class="has-line-data" data-line-start="490" data-line-end="491">As it stands, you can enter any string into the weight field and it will be considered valid - not ideal, but also trivial to fix. A good exercise would be to write some tests to ensure the input is a number, and if not, return a useful error message. We also haven’t got any tests to ensure the <code>&lt;button&gt;</code> is correctly disabled.</p>
+<h4 class="code-line" data-line-start=492 data-line-end=493 ><a id="Exercises_492"></a>Exercises:</h4>
+<ul>
+<li class="has-line-data" data-line-start="494" data-line-end="495">add a test to ensure that any non numbers entered into the <code>weight</code> field cause the field to become invalid and show a “Weight must be a number” error.</li>
+<li class="has-line-data" data-line-start="495" data-line-end="496">add a <code>@submit.prevent</code> listener to the <code>&lt;form&gt;</code>. When the form is submitted, emit an event with the <code>patientForm</code>.</li>
+<li class="has-line-data" data-line-start="496" data-line-end="498">submit the form using Vue Test Utils and assert the correct event and payload is emitted.</li>
+</ul>
+<p class="has-line-data" data-line-start="498" data-line-end="499">You can find the completed source code (including exercises) in the 
+ <a href="https://gist.github.com/lmiller1990/4a15e496772802b213608111590a1221">GitHub repository</a> .</p>

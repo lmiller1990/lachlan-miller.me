@@ -1,3 +1,4 @@
+/** theme **/
 body {
   font-family: system-ui,BlinkMacSystemFont,-apple-system,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif !important;
   line-height: 1.6em;
@@ -36,6 +37,23 @@ h4 {
 h5 {
   font-size: 1.25rem;
   margin: 0 0 5px 0;
+}
+
+td, th {
+  border: 1px solid;
+  padding: 5px;
+}
+
+th {
+  border-bottom: 2px solid;
+}
+
+table {
+  margin: 10px 0 20px 0;
+}
+
+img {
+  max-height: 75vh;
 }
 
 blockquote {
@@ -98,6 +116,7 @@ button:disabled {
   opacity: 0.5;
 }
 
+/** app specific **/
 .main {
   max-width: 800px;
 }
@@ -131,8 +150,23 @@ button:disabled {
 
 .profile__image {
   border-radius: 50%;
+  border: 1px transparent;
   height: 100px;
   margin: 0 30px 0 0;
+}
+
+
+@media screen and (max-width: 500px) {
+  .profile {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .profile__links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
 }
 
 .link {

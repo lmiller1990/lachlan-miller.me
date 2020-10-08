@@ -1,5 +1,16 @@
 extends ../shared/index.pug
 
 block content
+  style.
+    img {
+      border: 1px solid black;
+    }
+
+    th, td {
+      min-width: 50px;
+    }
+
   include ../shared/subscribe.pug
   unescaped!=content
+  hr
+  include ../shared/subscribe.pug
