@@ -3,6 +3,7 @@ export interface Article {
   slug: string
   published: string
   description: string
+  image?: string
 }
 
 export const articles: Article[] = [
@@ -23,5 +24,6 @@ export const articles: Article[] = [
     slug: "writing-testable-forms",
     published: "2020-10-08",
     description: "Write more testable and reliable forms by isolating the business logic from the UI layer.",
+    image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1652&q=80"
   }
 ]
