@@ -110,6 +110,7 @@ label {
 
 input {
   margin: 0 5px 0 0;
+  height: 20px;
 }
 
 button:disabled {

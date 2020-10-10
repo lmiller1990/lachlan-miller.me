@@ -32,6 +32,15 @@ router.use('/musings', (req: Request, res: Response) => {
   res.render('musings/index')
 })
 
+router.use('/screencasts/spreadsheet-engine-from-scratch', (req: Request, res: Response) => {
+  res.render('screencasts/spreadsheet-engine-from-scratch')
+})
+
+router.use('/design-patterns-for-vuejs', (req: Request, res: Response) => {
+  const landingPage = fs.readFileSync('./app/views/marketing/design-patterns-for-vuejs.html')
+  res.render('marketing/design-patterns-for-vuejs', { landingPage })
+})
+
 router.use('/screencasts', (req: Request, res: Response) => {
   res.render('screencasts/index')
 })
