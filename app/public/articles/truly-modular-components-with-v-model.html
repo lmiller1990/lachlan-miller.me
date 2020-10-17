@@ -1,0 +1,370 @@
+<h4 id="truly-modular-components-with-v-model">Truly Modular Components with v-model</h4>
+<p>In this section we will author a reusable date component. Usage will be like this:</p>
+<pre><code class="lang-html">&lt;<span class="hljs-built_in">date</span>-<span class="hljs-built_in">time</span> v-model=<span class="hljs-string">"date"</span> /&gt;
+</code></pre>
+<p>Where <code>date</code> can be... whatever you want. Some applications use the native JavaScript <code>Date</code> object (don&#39;t do this; it&#39;s not a fun experience). Older applications will often use <a href="https://momentjs.com/">Moment</a> and newer ones common opt for <a href="https://moment.github.io/luxon/">Luxon</a>. I&#39;d like to support both - and any other library the user might choose to use! In other words, we want the component to be agnostic - it should not be coupled to a specific date time library.</p>
+<p>You can find the <a href="https://gist.github.com/lmiller1990/bca97f1a32e5878ea1652a4b594d3ab1">completed source code, including exercise, here</a>.</p>
+<p>One way to handle this would be to pick a simple format of our own, for example <code>YYYY-MM-DD</code>, and then have the user wrap the component and provide their own integration layer. For example a user wanting to use Luxon might wrap <code>&lt;date-time&gt;</code> in their own <code>&lt;date-time-luxon&gt;</code> component:</p>
+<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">date-time</span>
+    <span class="hljs-attr">:modelValue</span>=<span class="hljs-string">"date"</span>
+    @<span class="hljs-attr">update:modelValue</span>=<span class="hljs-string">"updateDate"</span>
+  /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { ref } <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+<span class="hljs-keyword">import</span> { DateTime } <span class="hljs-keyword">from</span> <span class="hljs-string">'luxon'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  setup() {
+    <span class="hljs-keyword">return</span> {
+      <span class="hljs-attr">date</span>: ref(DateTime.local()),
+      <span class="hljs-attr">updateDate</span>: <span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> {
+        <span class="hljs-comment">// some logic to turn value which is</span>
+        <span class="hljs-comment">// YYYY-MM-DD into Luxon DateTime</span>
+      }
+    }        
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>This might work ok - now you can put your <code>&lt;luxon-date-time&gt;</code> on npm to share. But other people may have different ways they&#39;d like to validate the date from v-model before calling <code>updateValue</code> or have a different opinion on the API <code>&lt;date-time-luxon&gt;</code> should support. Can we be more flexible ? What about moment? Do we need to make a <code>&lt;moment-date-time&gt;</code> component too? </p>
+<p>This is not that easy to test, either. You will need to mount the component using something like Vue Test Utils just to test your parsing logic - again, not ideal. Of course we will need some integration tests to make sure it&#39;s working correctly, but I don&#39;t want to couple my business logic tests (eg, the parsing logic from <code>updateDate</code> using pure functions and Jest) to the UI layer tests (using Vue Test Utils).</p>
+<p>The core problem of the &quot;wrapper&quot; solution is you are adding another abstraction, another layer. Not ideal. The problem that needs solving is <em>serializing</em> and <em>deserializing</em> <code>v-model</code> in a library agnostic way. </p>
+<p>Here is the API I am proposing to make <code>&lt;date-time&gt;</code> truly agnostic, not needing to know the implementation details of the date library:</p>
+<pre><code class="lang-html">&lt;<span class="hljs-built_in">date</span>-<span class="hljs-built_in">time</span> 
+  v-model=<span class="hljs-string">"date"</span> 
+  :serialize=<span class="hljs-string">"serialize"</span>
+  :deserialize=<span class="hljs-string">"deserialize"</span>
+/&gt;
+</code></pre>
+<p><code>date</code> can be whatever you want - <code>serialize</code> and <code>deserialize</code> will be the functions that tell <code>&lt;date-time&gt;</code> how to handle the value.</p>
+<p>A diagram might make this more clear:</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/design-pattenrns-for-vuejs/master/images/dt-ss-1.png" alt=""></p>
+<h4 id="foundations-of-v-model">Foundations of v-model</h4>
+<p>Before starting the serialize functions, let&#39;s write the base for <code>&lt;date-time&gt;</code>. It will use <code>v-model</code>. This means we receive a <code>modelValue</code> prop and update the value by emitting a <code>update:modelValue</code> event. To keep things simple, I will just use 3 <code>&lt;input&gt;</code> elements for the year, month and day.</p>
+<pre><code class="lang-html"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"modelValue.year"</span> @<span class="hljs-attr">input</span>=<span class="hljs-string">"update($event, 'year')"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"modelValue.month"</span> @<span class="hljs-attr">input</span>=<span class="hljs-string">"update($event, 'month')"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"modelValue.day"</span> @<span class="hljs-attr">input</span>=<span class="hljs-string">"update($event, 'day')"</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">pre</span>&gt;</span>
+date is:
+</span><span class="hljs-template-variable">{{ modelValue }</span><span class="xml">} 
+<span class="hljs-tag">&lt;/<span class="hljs-name">pre</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="actionscript">
+<span class="hljs-meta"><span class="hljs-meta-keyword">import</span> </span></span></span><span class="hljs-template-variable">{ reactive, watch, computed }</span><span class="xml"><span class="javascript"> <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+<span class="hljs-keyword">import</span> </span></span><span class="hljs-template-variable">{ DateTime }</span><span class="xml"><span class="javascript"> <span class="hljs-keyword">from</span> <span class="hljs-string">'luxon'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> </span></span><span class="hljs-template-variable">{
+  props: {
+    modelValue: {
+      type: Object
+    }</span><span class="xml"><span class="undefined">,
+  },
+
+  setup(props, </span></span><span class="hljs-template-variable">{ emit }</span><span class="xml"><span class="undefined">) </span></span><span class="hljs-template-variable">{
+    const update = ($event, field) =&gt; {
+      const { year, month, day }</span><span class="xml"><span class="javascript"> = props.modelValue
+      <span class="hljs-keyword">let</span> newValue
+      <span class="hljs-keyword">if</span> (field === <span class="hljs-string">'year'</span>) </span></span><span class="hljs-template-variable">{
+        newValue = { year: $event.target.value, month, day }</span><span class="xml"><span class="actionscript">
+      }
+      <span class="hljs-keyword">if</span> (field === <span class="hljs-string">'month'</span>) </span></span><span class="hljs-template-variable">{
+        newValue = { year, month: $event.target.value, day }</span><span class="xml"><span class="actionscript">
+      }
+      <span class="hljs-keyword">if</span> (field === <span class="hljs-string">'day'</span>) </span></span><span class="hljs-template-variable">{
+        newValue = { year, month, day: $event.target.value }</span><span class="xml"><span class="actionscript">
+      }
+      emit(<span class="hljs-string">'update:modelValue'</span>, newValue)
+    }
+
+    <span class="hljs-keyword">return</span> </span></span><span class="hljs-template-variable">{
+      update
+    }</span><span class="xml"><span class="undefined">
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span>
+</code></pre>
+<p>Usage is like this:</p>
+<pre><code class="lang-html"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">date-time</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">"dateLuxon"</span> /&gt;</span>
+  </span><span class="hljs-template-variable">{{ dateLuxon }}</span><span class="xml">
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { ref } <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+<span class="hljs-keyword">import</span> dateTime <span class="hljs-keyword">from</span> <span class="hljs-string">'./date-time.vue'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">components</span>: { DateTime },
+  setup() {
+    <span class="hljs-keyword">const</span> dateLuxon = ref({
+      <span class="hljs-attr">year</span>: <span class="hljs-string">'2020'</span>,
+      <span class="hljs-attr">month</span>: <span class="hljs-string">'01'</span>,
+      <span class="hljs-attr">day</span>: <span class="hljs-string">'01'</span>,
+    })
+
+    <span class="hljs-keyword">return</span> {
+      dateLuxon
+    }
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span>
+</code></pre>
+<p>I called the variable <code>dateLuxon</code> since we will eventually change it to be a Luxon <code>DateTime</code>. For now it is just a plain JavaScript object, make reactive via <code>ref</code>. This is all standard - we made our custom component work with <code>v-model</code> by binding to <code>:value</code> with <code>modelValue</code>, and update the original value in the parent component with <code>emit(&#39;update:modelValue&#39;)</code>.</p>
+<h4 id="deerializing-for-modelvalue">Deerializing for modelValue</h4>
+<p>We have established the internal API, or how the <code>&lt;date-time&gt;</code> component will manage the value. For notation purposes, if we were to write an interface in TypeScript, it would look like this:</p>
+<pre><code class="lang-ts">interface InternalDateTime {
+  <span class="hljs-built_in">year</span>?: <span class="hljs-built_in">string</span>
+  <span class="hljs-built_in">month</span>?: <span class="hljs-built_in">string</span>
+  <span class="hljs-built_in">day</span>?: <span class="hljs-built_in">string</span>
+}
+</code></pre>
+<p>We will now work on the <code>deserialize</code> prop, which will convert any string object (so a Luxon <code>DateTime</code>, a Moment <code>moment</code>) into an <code>InternalDateTime</code>
+.</p>
+<h4 id="deserializing-modelvalue">Deserializing modelValue</h4>
+<p>Let&#39;s take Luxon&#39;s <code>DateTime</code>. You can create a new one like this:</p>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> { DateTime } from <span class="hljs-string">'luxon'</span>
+
+<span class="hljs-keyword">const</span> date = DateTime.fromObject({
+  <span class="hljs-built_in">year</span>: <span class="hljs-string">'2020'</span>,
+  <span class="hljs-built_in">month</span>: <span class="hljs-string">'10'</span>,
+  <span class="hljs-built_in">day</span>: <span class="hljs-string">'02'</span>
+})
+</code></pre>
+<p>The goal is to get from our input to <code>v-model</code>, in this case a Luxon <code>DateTime</code>, to our internal representation, <code>InternalDateTime</code>. This conversion is trivial: from <code>DateTime</code>, you can just do <code>date.get()</code> passing in <code>year</code>, <code>month</code> or <code>day</code>. So our <code>deserialize</code> function looks like this:</p>
+<pre><code class="lang-js"><span class="hljs-comment">// value is what is passed to `v-model`</span>
+<span class="hljs-comment">// in this example a Luxon DateTime</span>
+<span class="hljs-comment">// we need to return an InternalDateTime</span>
+<span class="hljs-function">export function <span class="hljs-title">deserialize</span>(<span class="hljs-params"><span class="hljs-keyword">value</span></span>) </span>{
+  <span class="hljs-keyword">return</span> {
+    year: <span class="hljs-keyword">value</span>.<span class="hljs-keyword">get</span>(<span class="hljs-string">'year'</span>),
+    month: <span class="hljs-keyword">value</span>.<span class="hljs-keyword">get</span>(<span class="hljs-string">'month'</span>),
+    day: <span class="hljs-keyword">value</span>.<span class="hljs-keyword">get</span>(<span class="hljs-string">'day'</span>)
+  }
+}
+</code></pre>
+<p>Let&#39;s update the usage:</p>
+<pre><code class="lang-html"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">date-time</span> 
+    <span class="hljs-attr">v-model</span>=<span class="hljs-string">"dateLuxon"</span> 
+    <span class="hljs-attr">:deserialize</span>=<span class="hljs-string">"deserialize"</span>
+  /&gt;</span>
+  </span><span class="hljs-template-variable">{{ dateLuxon }}</span><span class="xml">
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { ref } <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+<span class="hljs-keyword">import</span> dateTime <span class="hljs-keyword">from</span> <span class="hljs-string">'./date-time.vue'</span>
+<span class="hljs-keyword">import</span> { DateTime } <span class="hljs-keyword">from</span> <span class="hljs-string">'luxon'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">deserialize</span>(<span class="hljs-params">value</span>) </span>{
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">year</span>: value.get(<span class="hljs-string">'year'</span>),
+    <span class="hljs-attr">month</span>: value.get(<span class="hljs-string">'month'</span>),
+    <span class="hljs-attr">day</span>: value.get(<span class="hljs-string">'day'</span>)
+  }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">components</span>: { dateTime },
+
+  setup() {
+    <span class="hljs-keyword">const</span> dateLuxon = ref(DateTime.fromObject({
+      <span class="hljs-attr">year</span>: <span class="hljs-string">'2019'</span>,
+      <span class="hljs-attr">month</span>: <span class="hljs-string">'01'</span>,
+      <span class="hljs-attr">day</span>: <span class="hljs-string">'01'</span>,
+    }))
+
+    <span class="hljs-keyword">return</span> {
+      dateLuxon,
+      deserialize
+    }
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span>
+</code></pre>
+<p>Next, update <code>&lt;date-time&gt;</code> to use the new <code>deserialize</code> prop:</p>
+<pre><code class="lang-html"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"date.year"</span> @<span class="hljs-attr">input</span>=<span class="hljs-string">"update($event, 'year')"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"date.month"</span> @<span class="hljs-attr">input</span>=<span class="hljs-string">"update($event, 'month')"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">:value</span>=<span class="hljs-string">"date.day"</span> @<span class="hljs-attr">input</span>=<span class="hljs-string">"update($event, 'day')"</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">pre</span>&gt;</span>
+date is:
+</span><span class="hljs-template-variable">{{ <span class="hljs-name">date</span> }}</span><span class="xml"> 
+<span class="hljs-tag">&lt;/<span class="hljs-name">pre</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { reactive, computed } <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">props</span>: {
+    <span class="hljs-attr">modelValue</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">Object</span>
+    },
+    <span class="hljs-attr">deserialize</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">Function</span>
+    }
+  },
+
+  setup(props, { emit }) {
+    <span class="hljs-keyword">const</span> date = computed(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      <span class="hljs-keyword">return</span> props.deserialize(props.modelValue)
+    })
+
+    <span class="hljs-keyword">const</span> update = <span class="hljs-function">(<span class="hljs-params">$event, field</span>) =&gt;</span> {
+      <span class="hljs-keyword">const</span> { year, month, day } = props.deserialize(props.modelValue)
+      <span class="hljs-comment">// ...</span>
+    }
+
+    <span class="hljs-comment">// ...</span>
+
+    <span class="hljs-keyword">return</span> {
+      update,
+      date
+    }
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span>
+</code></pre>
+<p>The main changes are we now need to use a <code>computed</code> property for <code>modelValue</code>, to ensure it is correctly transformed into our <code>InternalDateTime</code> representation. We also need to <code>deserialize</code> the <code>modelValue</code> in the <code>update</code> function when preparing to update <code>modelValue</code>. </p>
+<p>This implementation currently works - kind of - it displays the correct values in the <code>&lt;input&gt;</code> elements, but you cannot update the value. We need the opposite of <code>deserialize</code> - <code>serialize</code>.</p>
+<h4 id="serializing-modelvalue">Serializing modelValue</h4>
+<p>We need to ensure are calling <code>emit(&#39;update:modelValue&#39;</code>) with a Luxon <code>DateTime</code> now, not an <code>InternalDateTime</code> object. Let&#39;s see how we can write a <code>serialize</code> function to transform the value. It&#39;s simple. Luxon&#39;s <code>DateTime.fromObject</code> happens to take an object with the same shape as our <code>InternalDateTime</code>. We will see a more complex example with the moment integration.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">function</span> <span class="hljs-title">serialize</span>(value) {
+  <span class="hljs-keyword">return</span> <span class="hljs-type">DateTime.fromObject(value)</span>
+}
+</code></pre>
+<p>Again, update the usage.</p>
+<pre><code class="lang-html"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">date-time</span> 
+    <span class="hljs-attr">v-model</span>=<span class="hljs-string">"dateLuxon"</span> 
+    <span class="hljs-attr">:deserialize</span>=<span class="hljs-string">"deserialize"</span>
+    <span class="hljs-attr">:serialize</span>=<span class="hljs-string">"serialize"</span>
+  /&gt;</span>
+  </span><span class="hljs-template-variable">{{ dateLuxon }}</span><span class="xml">
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { ref } <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+<span class="hljs-keyword">import</span> dateTime <span class="hljs-keyword">from</span> <span class="hljs-string">'./date-time.vue'</span>
+<span class="hljs-keyword">import</span> { DateTime } <span class="hljs-keyword">from</span> <span class="hljs-string">'luxon'</span>
+
+<span class="hljs-comment">// ...</span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serialize</span>(<span class="hljs-params">value</span>) </span>{
+  <span class="hljs-keyword">return</span> DateTime.fromObject(value)
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+
+    <span class="hljs-comment">// ...</span>
+
+    <span class="hljs-keyword">return</span> {
+      dateLuxon,
+      deserialize,
+      serialize
+    }
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span>
+</code></pre>
+<p>Next, we need to call <code>serialize</code> every time we try to update <code>modelValue</code>. Update <code>&lt;date-time&gt;</code>:</p>
+<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- omitted for brevity --&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { computed } <span class="hljs-keyword">from</span> <span class="hljs-string">'vue'</span>
+<span class="hljs-keyword">import</span> { DateTime } <span class="hljs-keyword">from</span> <span class="hljs-string">'luxon'</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">props</span>: {
+    <span class="hljs-attr">modelValue</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">Object</span>
+    },
+    <span class="hljs-attr">serialize</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">Function</span>
+    },
+    <span class="hljs-attr">deserialize</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-built_in">Function</span>
+    }
+  },
+
+  setup(props, { emit }) {
+    <span class="hljs-comment">// ...</span>
+
+    <span class="hljs-keyword">const</span> update = <span class="hljs-function">(<span class="hljs-params">$event, field</span>) =&gt;</span> {
+      <span class="hljs-keyword">const</span> { year, month, day } = props.deserialize(props.modelValue)
+      <span class="hljs-keyword">let</span> newValue
+
+      <span class="hljs-comment">// ...</span>
+
+      emit(<span class="hljs-string">'update:modelValue'</span>, props.serialize(newValue))
+    }
+
+    <span class="hljs-keyword">return</span> {
+      update,
+      date
+    }
+  }
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>It works! Kind of - as long as you only enter value numbers. If you enter a <code>0</code> for the day, all the inputs show <code>NaN</code>. We need some error handling.</p>
+<h4 id="error-handling">Error Handling</h4>
+<p>In the case of an error - either we could not serialize or deserialize the value - we will just return the current input value, and give the user a chance to fix things.</p>
+<p>Let&#39;s update <code>serialize</code> to be more defensive:</p>
+<pre><code class="lang-js"><span class="hljs-function">function <span class="hljs-title">serialize</span>(<span class="hljs-params"><span class="hljs-keyword">value</span></span>) </span>{
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">const</span> obj = DateTime.fromObject(<span class="hljs-keyword">value</span>)
+    <span class="hljs-keyword">if</span> (obj.invalid) {
+      <span class="hljs-keyword">return</span> 
+    }
+  } <span class="hljs-keyword">catch</span> {
+    <span class="hljs-keyword">return</span> 
+  }
+
+  <span class="hljs-keyword">return</span> DateTime.fromObject(<span class="hljs-keyword">value</span>)
+}
+</code></pre>
+<p>In the case that we failed to serialize the value, we just return <code>undefined</code>. Update the <code>emit</code> in <code>&lt;date-time&gt;</code> to use this new logic; if the value is invalid, we simply do not update modelValue:</p>
+<pre><code class="lang-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-attr">props</span>: {
+      <span class="hljs-comment">// ...</span>
+  },
+
+  setup(props, { emit }) {
+    <span class="hljs-comment">// ...</span>
+    <span class="hljs-keyword">const</span> update = <span class="hljs-function">(<span class="hljs-params">$event, field</span>) =&gt;</span> {
+      <span class="hljs-keyword">const</span> { year, month, day } = props.modelValue
+      <span class="hljs-keyword">let</span> newValue
+
+      <span class="hljs-comment">// ...</span>
+
+      <span class="hljs-keyword">const</span> asObject = props.serialize(newValue)
+      <span class="hljs-keyword">if</span> (!asObject) {
+        <span class="hljs-keyword">return</span>
+      }
+      emit(<span class="hljs-string">'update:modelValue'</span>, asObject)
+    }
+
+    <span class="hljs-keyword">return</span> {
+      update,
+      date
+    }
+  }
+}
+</code></pre>
+<p>Great! Now everything works correctly, and <code>&lt;date-time&gt;</code> will only update <code>modelValue</code> if the date is valid. This behavior is a design decision I made; you could do something different depending on how you would like your <code>&lt;date-time&gt;</code> to work.</p>
+<h4 id="exercises">Exercises</h4>
+<ul>
+<li>We did not add any tests for <code>serialize</code> or <code>deserialize</code>; they are pure functions, so adding some is trivial. See the source code for some tests.</li>
+<li>Add support for another date library, like moment. Support for moment is implemented in the source code.</li>
+<li>Add hours, minutes, seconds, and AM/PM support.</li>
+<li>Write some tests with Vue Test Utils; you can use <code>setValue</code> to update the value of the <code>&lt;input&gt;</code> elements.</li>
+</ul>

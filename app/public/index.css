@@ -54,6 +54,7 @@ table {
 
 img {
   max-height: 75vh;
+  max-width: 560px;
 }
 
 blockquote {

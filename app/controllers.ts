@@ -22,6 +22,10 @@ router.use('/contact', (req: Request, res: Response) => {
   res.render('contact/index')
 })
 
+router.use('/vue-toronto-2020', (req: Request, res: Response) => {
+  res.render('misc/vue-toronto-2020')
+})
+
 router.use('/musings/:slug', (req: Request, res: Response) => {
   const content = fs.readFileSync(`./app/public/musings/${req.params.slug}.html`)
 res.render('musings/show', { content })

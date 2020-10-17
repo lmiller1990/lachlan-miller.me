@@ -25,5 +25,12 @@ export const articles: Article[] = [
     published: "2020-10-08",
     description: "Write more testable and reliable forms by isolating the business logic from the UI layer.",
     image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1652&q=80"
+  },
+  {
+    title: "Truly Modular Components with v-model",
+    slug: "truly-modular-components-with-v-model",
+    published: "2020-10-17",
+    description: "Write a <date-time> component that is modular and reusable with any datetime library.",
+    image: "https://images.unsplash.com/photo-1600152015632-77c2aa5565d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1567&q=80"
   }
 ]
