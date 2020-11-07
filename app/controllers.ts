@@ -11,11 +11,15 @@ router.use('/articles/:slug', (req: Request, res: Response) => {
 })
 
 router.use('/articles', (req: Request, res: Response) => {
-  res.render('articles/index', { articles: articles.reverse() })
+  res.render('articles/index', { articles })
 })
 
 router.use('/projects', (req: Request, res: Response) => {
   res.render('projects/index')
+})
+
+router.use('/books', (req: Request, res: Response) => {
+  res.render('books/index')
 })
 
 router.use('/contact', (req: Request, res: Response) => {
@@ -41,7 +45,10 @@ router.use('/screencasts/spreadsheet-engine-from-scratch', (req: Request, res: R
 
 router.use('/design-patterns-for-vuejs', (req: Request, res: Response) => {
   const landingPage = fs.readFileSync('./app/views/marketing/design-patterns-for-vuejs.html')
-  res.render('marketing/design-patterns-for-vuejs', { landingPage })
+  res.render('marketing/design-patterns-for-vuejs', {
+    landingPage,
+    STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY
+  })
 })
 
 router.use('/screencasts', (req: Request, res: Response) => {
