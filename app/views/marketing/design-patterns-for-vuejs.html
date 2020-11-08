@@ -11,33 +11,98 @@
 
   <main>
 
-<script>
-  function postEmail(payload) {
-    return window.fetch('https://vuejs-course.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    })
-  }
+    <script>
+      function postEmail(payload) {
+        return window.fetch('https://vuejs-course.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+      }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const $forms = document.querySelectorAll('.email-form')
-    for (const $form of Array.from($forms)) {
-      $form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const $email = $form.querySelector('.email-form__email')
-        const $button = $form.querySelector('.email-form__button')
-        $button.setAttribute('disabled', 'disabled')
-        $button.textContent = 'Submitting...'
-        await postEmail({ email: $email.value, referrer: 'lachlan-miller.me/design-patterns' })
-        $button.removeAttribute('disabled')
-        $button.textContent = 'Thanks!'
+      document.addEventListener('DOMContentLoaded', () => {
+        const $forms = document.querySelectorAll('.email-form')
+        for (const $form of Array.from($forms)) {
+          $form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const $email = $form.querySelector('.email-form__email')
+            const $button = $form.querySelector('.email-form__button')
+            $button.setAttribute('disabled', 'disabled')
+            $button.textContent = 'Submitting...'
+            await postEmail({ email: $email.value, referrer: 'lachlan-miller.me/design-patterns' })
+            $button.removeAttribute('disabled')
+            $button.textContent = 'Thanks!'
+            const $preview = document.querySelector('.preview__download').classList.remove('d-none')
+          })
+        }
       })
-    }
-  })
-  </script>
+
+      const GEO_API_URL = 'https://freegeoip.app/json/';
+      const PPP_API_URL =
+        'https://api.purchasing-power-parity.com/?target=';
+
+      const mapGeo = response => ({
+        countryCodeIsoAlpha2: response.country_code,
+        countryName: response.country_name,
+      })
+
+      const fetchGeo = () => window.fetch(GEO_API_URL)
+        .then(res => res.json())
+        .then(data => {
+          const { countryCodeIsoAlpha2, countryName } = mapGeo(data)
+
+          window.fetch(`${PPP_API_URL}${countryCodeIsoAlpha2}`)
+            .then(res => res.json())
+            .then(res => {
+              const CODES = {                   
+                '0.1': { code: 'SHARE_VUE_LOVE', off: 90 },
+                '0.2': { code: 'SHARE_LOVE_VUE', off: 80 },
+                '0.3': { code: 'VUEJS_AWESOME_70_OFF', off: 70 },
+                '0.4': { code: 'SHARE_LOVE_VUEJS', off: 60 },
+                '0.5': { code: 'LOVE_SHARE_VUEJS', off: 50 },
+                '0.6': { code: 'SHARE_THE_LOVE_VUE', off: 40 },
+                '0.7': { code: 'LOVE_SHARE_VUE', off: 30 },
+                '0.8': { code: 'VUE_SHARE_THE_LOVE', off: 20 },
+                '0.9': { code: 'VUE_LOVE_SHARE', off: 10 }
+              }
+
+              if (res.ppp.pppConversionFactor <= 0.9) {
+                const round = Math.round((res.ppp.pppConversionFactor) * 10) / 10
+                const discount = CODES[res.ppp.pppConversionFactor.toFixed(1)]
+
+                const msg = `
+                  <div class="purchasing-parity-card">
+                    <p>
+                      Hi! It looks like you are in ${countryName} where this book might be
+                      a bit expensive.
+                    </p> 
+                    <p>
+                      I support <b>parity purchasing power</b> - I want
+                      to maximize my impact by making this book affordable to 
+                      everyone all around the world.
+                    </p>
+                    <p>
+                      Use the discount code <b>${discount.code}</b> to get
+                      <b>${discount.off}%</b> off at the checkout. 👊🏼
+                    </p> 
+                  </div>
+                  <br />
+                `
+
+                const $message = document.querySelector('.purchasing-parity')
+                console.log($message)
+                $message.innerHTML = msg;
+
+                console.log(msg)
+              }
+            })
+        })
+
+      // fetchGeo()
+
+    </script>
     <section>
       <div class="section__content">
         <h1 class="text-center">Design Patterns for Vue.js</h1>
@@ -48,29 +113,29 @@
 
     <section>
       <div class="section__content">
+        
+        <div class="purchasing-parity">            
+        </div>
+
         <div class="call-to-action">
           <div class="call-to-action__text">
-            <!-- Sign up to preview first few chapters including on design patterns for props and
-            writing decoupled, testable forms. -->
-            Sign up to get progress updates, previews and a discounted price on release.
+            Sign up to get the first two chapters, "Testable Forms" and "Renderless Components" for free!
           </div>
 
           <form class="email-form">
             <input name="email" placeholder="Your email address" class="email-form__email" />
             <!-- <button type="submit" id="subscribe">Send me the preview</button> -->
-            <button type="submit" class="email-form__button">Sign me up</button>
+            <button type="submit" class="email-form__button">Give me the preview</button>
           </form>
 
-          <!-- 
-            <div class="call-to-action__text">
+          <div class="call-to-action__text">
             Or <a href="#pricing">buy now</a> if you don't need convinicing.
-          </div> 
-        -->
-
+          </div>
         </div>
 
-        <div class="preview__download">
-          <a target="_blank" href="https://app.box.com/s/ymmknytu2qev0l0jdgsqh9hgr50zuikz">Get two chapters for free</a>.
+        <div class="preview__download d-none">
+          <a target="_blank" href="https://app.box.com/s/ymmknytu2qev0l0jdgsqh9hgr50zuikz">Get two chapters for
+            free</a>.
         </div>
       </div>
     </section>
@@ -101,12 +166,22 @@
           <li>
             <img class="check"
               src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>Composition API</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
             <span>Separation of concerns</span>
           </li>
           <li>
             <img class="check"
               src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
             <span>Test-first philosophy</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>Rendless components for maximum reusability</span>
           </li>
           <li>
             <img class="check"
@@ -139,13 +214,6 @@
         </p>
         <p>
 
-        <h4>📺 Screencasts</h4>
-        <p>
-          A screencast covering each section of the book. See how I think, my code style, and how I approach
-          writing modular Vue apps with test coverage, as well as little tricks I've learned over the years
-          from working on many complex Vue applications.
-        </p>
-
         <h4>🏋️‍♂️ Exercises (with solutions)</h4>
         <p>
           Each section ends with exercises to make sure you understand everything. The source code is also included,
@@ -165,48 +233,6 @@
     <section id="pricing">
       <div class="section__content">
         <div class="cards">
-          <div class="cards__outer">
-            <div class="cards__title">
-              Basic Package
-            </div>
-
-            <div class="cards__content">
-              <div class="cards__image-wrapper">
-                <img class="cards__image" src="https://www.flaticon.com/svg/static/icons/svg/2721/2721329.svg">
-              </div>
-
-              <ul class="features">
-                <li>
-                  <img class="check"
-                    src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
-                  <span>Download PDF + epub</span>
-                </li>
-                <li>
-                  <img class="check"
-                    src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
-                  <span>Source code + exercise solutions</span>
-                </li>
-              </ul>
-
-              <a class="cards__content--button button bg-silver">
-                <div>
-                  Coming soon!
-                </div>
-
-                <!-- 
-                <div>
-                  Get Access
-                </div>
-                <div class="cards__content--divider"></div>
-                <div>
-                  <span class="strikethrough">$49</span> <b>$39</b>
-                </div> 
-                -->
-
-              </a>
-
-            </div>
-          </div>
 
           <div class="cards__outer">
             <div class="cards__title">
@@ -232,33 +258,19 @@
                 <li>
                   <img class="check"
                     src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
-                  <span>Video screencasts implementing examples and commentary</span>
-                </li>
-                <li>
-                  <img class="check"
-                    src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
                   <span>Lifetime access to future updates</span>
                 </li>
               </ul>
 
-              <a class="cards__content--button button bg-green">
+              <a 
+                class="cards__content--button button bg-green" 
+                target="_blank" 
+                href="https://gum.co/design-patterns-vuejs"
+              >
                 <div>
-                  Coming soon!
+                  GET IT NOW
                 </div>
               </a>
-
-              
-              <!--
-              <a class="cards__content--button button bg-green">
-                <div>
-                  Get Access
-                </div>
-                <div class="cards__content--divider"></div>
-                <div>
-                  <span class="strikethrough">$69</span> <b>$49</b>
-                </div>
-              </a>
-            -->
 
             </div>
           </div>
@@ -267,28 +279,27 @@
       </div>
     </section>
 
-
     <section>
       <div class="section__content">
         <div class="call-to-action">
           <div class="call-to-action__text">
-            <!-- Sign up to preview first few chapters including on design patterns for props and
-            writing decoupled, testable forms. -->
-            Sign up to get progress updates, previews and a discounted price on release.
+            Sign up to get the first two chapters, "Testable Forms" and "Renderless Components" for free!
           </div>
 
           <form class="email-form">
             <input name="email" placeholder="Your email address" class="email-form__email" />
             <!-- <button type="submit" id="subscribe">Send me the preview</button> -->
-            <button type="submit" class="email-form__button">Sign me up</button>
+            <button type="submit" class="email-form__button">Give me the preview</button>
           </form>
 
-          <!-- 
-            <div class="call-to-action__text">
+          <div class="call-to-action__text">
             Or <a href="#pricing">buy now</a> if you don't need convinicing.
-          </div> 
-        -->
+          </div>
+        </div>
 
+        <div class="preview__download d-none">
+          <a target="_blank" href="https://app.box.com/s/ymmknytu2qev0l0jdgsqh9hgr50zuikz">Get two chapters for
+            free</a>.
         </div>
       </div>
     </section>
@@ -296,18 +307,29 @@
     <section>
       <div class="section__content">
         <h2>Frequently Asked Questions</h2>
+        <h4>Is this book for me?</h4>
+        <p>
+          Maybe! This is aimed at developers with some Vue.js experience, who would 
+          like to learn more advanced patterns. If you haven't work with Vue before,
+          you might want to <a class="white" href="https://v3.vuejs.org/guide/introduction.html">check out the docs first</a>.
+        </p>
+
         <h4>How do I get the content?</h4>
         <p>
-          When you purchase the content, you'll get a link to a platform I made just for
-          this course. You'll be able to watch the screencasts online (if you purchased that package)
-          or download them, as well as download the PDF/epub.
+          You can purchase it using 
+          <a 
+            class="white"
+            target="_blank" 
+            href="https://gum.co/design-patterns-vuejs"
+          >Gumroad</a>. You will be able to download PDF and EPUB formats. 
+          You will also be able to access updates (we all know how fast JavaScript changes).
         </p>
 
         <h4>Do you offer purchasing power parity?</h4>
         <p>
-          Yep, absolutely. I understand not every country has the same salaries, please 
+          Yep, absolutely. I understand not every country has the same purchasing power. Please
           <a class="white" href="mailto:lachlan@vuejs-course.com">send me an email</a>
-          and we can work something out!
+          letting me know where you live and we can work something out!
         </p>
       </div>
     </section>
@@ -326,8 +348,8 @@
         <p class="who-am-i">
           I have taught tens of thousands of developers how to write testable Vue.js applications
           through my <a href="https://www.udemy.com/user/lachlan-miller-4/">courses</a>,
-          <a href="https://lmiller1990.github.io/vue-testing-handbook/v3/">books</a> and
-          <a href="">YouTube channel</a>. I hope you will be next!
+          <a href="/books">books</a> and
+          <a href="https://www.youtube.com/channel/UCydNBt-h2Cox_Ub_GzspneQ?view_as=subscriber">YouTube channel</a>. I hope you will be next!
         </p>
 
         <p class="who-am-i">
@@ -343,10 +365,9 @@
     <section>
       <div class="section__content">
         <div>
-        Thanks to <a class="white" href="https://www.flaticon.com/authors/linector" title="Linector">Linector</a> 
-        and <a class="white" href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from
-        <a
-          class="white" href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
+          Thanks to <a class="white" href="https://www.flaticon.com/authors/linector" title="Linector">Linector</a>
+          and <a class="white" href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from
+          <a class="white" href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
           for the cute onigiri icons.
         </div>
       </div>
