@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "Cypress, Docker and X11",
+    slug: "cypress-x11-docker",
+    published: "2020-11-19",
+    description: "Set up the Cypress interactive runner to work with X11 in Docker.",
+    image: "https://images.unsplash.com/photo-1512419944406-9e8e4d4fee8a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80"
+  },
+  {
     title: "Renderless Components Pattern in Vue.js 3",
     slug: "renderless-components-pattern-in-vue-3",
     published: "2020-11-07",
