@@ -4,6 +4,10 @@ body {
   line-height: 1.6em;
 }
 
+p[align="center"] {
+  font-size: 0.9rem;
+}
+
 main {
   margin: 4rem 6rem;
 }
