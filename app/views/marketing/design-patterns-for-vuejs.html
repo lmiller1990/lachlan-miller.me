@@ -39,6 +39,7 @@
         }
       })
 
+      window.isLowerPower = false;
       const GEO_API_URL = 'https://freegeoip.app/json/';
       const PPP_API_URL =
         'https://api.purchasing-power-parity.com/?target=';
@@ -68,7 +69,8 @@
                 '0.9': { code: 'VUE_LOVE_SHARE', off: 10 }
               }
 
-              if (res.ppp.pppConversionFactor <= 0.9) {
+              if (res.ppp.pppConversionFactor <= 0.8) {
+                window.isLowerPower = true
                 const round = Math.round((res.ppp.pppConversionFactor) * 10) / 10
                 const discount = CODES[res.ppp.pppConversionFactor.toFixed(1)]
 
@@ -91,16 +93,15 @@
                   <br />
                 `
 
-                const $message = document.querySelector('.purchasing-parity')
-                console.log($message)
-                $message.innerHTML = msg;
-
-                console.log(msg)
+                const $banners = Array.from(document.querySelectorAll('.purchasing-parity'))
+                for (const $banner of $banners) {
+                  $banner.innerHTML = msg;
+                }
               }
             })
         })
 
-      // fetchGeo()
+      fetchGeo()
 
     </script>
     <section>
@@ -119,13 +120,12 @@
 
         <div class="call-to-action">
           <div class="call-to-action__text">
-            Sign up to get the first two chapters, "Testable Forms" and "Renderless Components" for free!
+            Preview "Testable Forms" and "Renderless Components" for free!
           </div>
 
           <form class="email-form">
-            <input name="email" placeholder="Your email address" class="email-form__email" />
-            <!-- <button type="submit" id="subscribe">Send me the preview</button> -->
-            <button type="submit" class="email-form__button">Give me the preview</button>
+            <!-- <input name="email" placeholder="Your email address" class="email-form__email" /> -->
+            <a target="_blank" href="https://app.box.com/s/5lwoe8m6fjt17p6gukp93v5u8qkc8m9b" type="submit" class="email-form__button">Give me the preview</a>
           </form>
 
           <div class="call-to-action__text">
@@ -209,7 +209,7 @@
 
         <h4>📗 The Book</h4>
         <p>
-          Beautifully formatted PDF and epub. 200 pages split into 10 sections that can be read in any order.
+          Beautifully formatted PDF and epub. 164 pages split into 10 sections that can be read in any order.
           Lifetime access (content updated as Vue changes and evolves).
         </p>
         <p>
@@ -233,6 +233,8 @@
     <section id="pricing">
       <div class="section__content">
         <div class="cards">
+          <div class="purchasing-parity">            
+          </div>
 
           <div class="cards__outer">
             <div class="cards__title">
@@ -268,7 +270,7 @@
                 href="https://gum.co/design-patterns-vuejs"
               >
                 <div>
-                  GET IT NOW
+                  GET IT NOW ($30)
                 </div>
               </a>
 
@@ -283,13 +285,12 @@
       <div class="section__content">
         <div class="call-to-action">
           <div class="call-to-action__text">
-            Sign up to get the first two chapters, "Testable Forms" and "Renderless Components" for free!
+            Preview "Testable Forms" and "Renderless Components" for free!
           </div>
 
           <form class="email-form">
-            <input name="email" placeholder="Your email address" class="email-form__email" />
-            <!-- <button type="submit" id="subscribe">Send me the preview</button> -->
-            <button type="submit" class="email-form__button">Give me the preview</button>
+            <!-- <input name="email" placeholder="Your email address" class="email-form__email" /> -->
+            <a target="_blank" href="https://app.box.com/s/5lwoe8m6fjt17p6gukp93v5u8qkc8m9b" type="submit" class="email-form__button">Give me the preview</a>
           </form>
 
           <div class="call-to-action__text">
@@ -297,8 +298,9 @@
           </div>
         </div>
 
+
         <div class="preview__download d-none">
-          <a target="_blank" href="https://app.box.com/s/ymmknytu2qev0l0jdgsqh9hgr50zuikz">Get two chapters for
+          <a target="_blank" href="https://app.box.com/s/5lwoe8m6fjt17p6gukp93v5u8qkc8m9b">Get two chapters for
             free</a>.
         </div>
       </div>
@@ -309,9 +311,8 @@
         <h2>Frequently Asked Questions</h2>
         <h4>Is this book for me?</h4>
         <p>
-          Maybe! This is aimed at developers with some Vue.js experience, who would 
-          like to learn more advanced patterns. If you haven't work with Vue before,
-          you might want to <a class="white" href="https://v3.vuejs.org/guide/introduction.html">check out the docs first</a>.
+          Maybe! This is aimed at developers with some JavaScript and Vue.js experience, who would 
+          like to learn more advanced patterns.
         </p>
 
         <h4>How do I get the content?</h4>
@@ -320,14 +321,15 @@
           <a 
             class="white"
             target="_blank" 
-            href="https://gum.co/design-patterns-vuejs"
+            href="https://gum.co/BPKzQ"
           >Gumroad</a>. You will be able to download PDF and EPUB formats. 
-          You will also be able to access updates (we all know how fast JavaScript changes).
+          You will also be able to download updates there, too (we all know how fast JavaScript changes).
+          I'll be keeping everything up to date.
         </p>
 
         <h4>Do you offer purchasing power parity?</h4>
         <p>
-          Yep, absolutely. I understand not every country has the same purchasing power. Please
+          Yes! I understand not every country has the same purchasing power. Please
           <a class="white" href="mailto:lachlan@vuejs-course.com">send me an email</a>
           letting me know where you live and we can work something out!
         </p>

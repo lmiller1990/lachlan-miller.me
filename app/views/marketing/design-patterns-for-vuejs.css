@@ -65,6 +65,9 @@ body {
 
 .email-form__email, .email-form__button {
   box-sizing: border-box;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
   margin: 5px 0;
   font-size: 1.2rem;
   border-radius: 5px;
@@ -154,14 +157,7 @@ section {
   border-radius: 10px;
   overflow: hidden;
   width: 350px;
-}
-
-.cards__outer:first-child {
   margin-left: 10px;
-}
-
-.cards__outer:last-child {
-  margin-left: -10px;
 }
 
 @media screen and (max-width: 768px) {
