@@ -4,6 +4,10 @@ body {
   line-height: 1.6em;
 }
 
+p[align="center"] {
+  font-size: 0.9rem;
+}
+
 main {
   margin: 4rem 6rem;
 }
@@ -76,7 +80,7 @@ pre > code {
   line-height: 1.5;
 }
 
-p > code {
+p > code, li > code {
   background: #f5f2f0;
   padding: 2px;
   font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
@@ -97,6 +101,12 @@ em {
 
 ol > li {
   list-style-type: decimal;
+  margin: 0 20px;
+  padding: 0 0 10px 0;
+}
+
+ul > li {
+  list-style-type: disc;
   margin: 0 20px;
   padding: 0 0 10px 0;
 }
