@@ -40,7 +40,7 @@
       })
 
       window.isLowerPower = false;
-      const GEO_API_URL = 'https://freegeoip.app/json/';
+      const GEO_API_URL = 'https://www.cloudflare.com/cdn-cgi/trace'
       const PPP_API_URL =
         'https://api.purchasing-power-parity.com/?target=';
 
@@ -50,11 +50,11 @@
       })
 
       const fetchGeo = () => window.fetch(GEO_API_URL)
-        .then(res => res.json())
+        .then(res => res.text())
         .then(data => {
-          const { countryCodeIsoAlpha2, countryName } = mapGeo(data)
+          const [_, loc] = data.match(/loc=(.*)/)
 
-          window.fetch(`${PPP_API_URL}${countryCodeIsoAlpha2}`)
+          window.fetch(`${PPP_API_URL}${loc}`)
             .then(res => res.json())
             .then(res => {
               const CODES = {                   
@@ -77,7 +77,7 @@
                 const msg = `
                   <div class="purchasing-parity-card">
                     <p>
-                      Hi! It looks like you are in ${countryName} where this book might be
+                      Hi! It looks like you are in a country where this book might be
                       a bit expensive.
                     </p> 
                     <p>
