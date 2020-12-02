@@ -21,6 +21,17 @@ head
     meta(property="og:title", content=article.title)
     meta(property="og:description", content=article.description)
     meta(property="og:image", content=article.image)
+
+  if musing
+    meta(property="twitter:card", content="summary")
+    meta(property="twitter:title", content=musing.title)
+    meta(property="twitter:description", content=musing.description)
+    meta(property="twitter:site", content="@Lachlan19900")
+    meta(property="twitter:image", content=musing.image)
+    meta(property="og:title", content=musing.title)
+    meta(property="og:description", content=musing.description)
+    meta(property="og:image", content=musing.image)
+
   meta(name='description' content='Technical articles, projects and general musings about software by Lachlan Miller.')
   title Lachlan Miller
 main.main
