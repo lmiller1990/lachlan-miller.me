@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { Router, Request, Response } from 'express'
 import { articles } from './models/articles'
+import { musings } from './models/musings'
 
 const router = Router()
 
@@ -32,11 +33,13 @@ router.use('/vue-toronto-2020', (req: Request, res: Response) => {
 
 router.use('/musings/:slug', (req: Request, res: Response) => {
   const content = fs.readFileSync(`./app/public/musings/${req.params.slug}.html`)
-res.render('musings/show', { content })
+  const musing = musings.find(x => x.slug === req.params.slug)
+  res.render('musings/show', { content, musing })
 })
 
+
 router.use('/musings', (req: Request, res: Response) => {
-  res.render('musings/index')
+  res.render('musings/index', { musings })
 })
 
 router.use('/screencasts/spreadsheet-engine-from-scratch', (req: Request, res: Response) => {

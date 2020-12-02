@@ -12,19 +12,21 @@ main {
   margin: 4rem 6rem;
 }
 
-@media screen and (max-width: 768px) {
-  main {
-    margin: 1rem;
-  }
-}
-
 .content {
   margin: 1rem 6rem 1rem 8rem
 }
 
 @media screen and (max-width: 768px) {
+  main {
+    margin: 1rem;
+  }
+
   .content {
     margin: 1rem;
+  }
+
+  img, iframe {
+    width: 100%;
   }
 }
 
