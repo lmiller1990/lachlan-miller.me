@@ -170,6 +170,7 @@ button:disabled {
 
 .profile__image {
   border-radius: 50%;
+  width: initial;
   border: 1px transparent;
   height: 100px;
   margin: 0 30px 0 0;
