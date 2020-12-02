@@ -4,11 +4,13 @@ script
 p
   em
     | Like my content?
-    | #[a(href="/design-patterns-for-vuejs") Sign up to get occasional emails]
+    | Sign up to get occasional emails
     | about new blog posts and other content. 
-    | Unsubscribe anytime #[a(href="https://vuejs-course.com/emails/unsubscribe") here].
-form#subscribe
-  label(for='email') Email
-  input#email(name='email')
-  button#email-submit(type='submit') Submit
+p
+  form#subscribe
+    label(for='email') Email
+    input#email(name='email')
+    button#email-submit(type='submit') Submit
+
+| Unsubscribe anytime #[a(href="https://vuejs-course.com/emails/unsubscribe") here].
 hr
