@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "PDF Customer Renderer for Vue.js 3",
+    slug: "vue-3-pdf-customer-renderer",
+    published: "2020-12-14",
+    description: "Create a custom PDF renderer using Vue.js 3's new modular architecture.",
+    image: "https://images.unsplash.com/photo-1582184081605-053a591eef94?ixid=MXwxMjA3fDB8MHxzZWFyY2h8NDN8fG1hcmtlcnxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+  },
+  {
     title: "Mocking Lower Layers for Better Test Coverage and Confidence",
     slug: "mocking-lower-layers-for-better-test-coverage-and-confidence",
     published: "2020-11-22",
