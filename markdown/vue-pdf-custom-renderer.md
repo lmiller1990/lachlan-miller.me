@@ -51,9 +51,7 @@ export default {
 
 And get this:
 
-<p align="center">
 ![](https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-final.png)
-</p>
 
 I will be using [PDFKit](https://pdfkit.org/) to produce the PDF. This is just an *example* - a fully featured PDF Renderer would be much more complex.
 
@@ -487,9 +485,7 @@ stream.on('finish', () => {
 
 Finally, we have a PDF!
 
-<p align="center">
 ![](https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-2.png)
-</p>
 
 Now we get to have some fun and add *styles*.
 
@@ -597,9 +593,7 @@ const draw = (node: PDFRenderable) => {
 
 Now we have red text:
 
-<p align="center">
 ![](https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-3.png)
-</p>
 
 ## Supporting Default Styles
 
@@ -607,7 +601,7 @@ We have cascading styles - anything nested under a `<View>` with `{color: 'red'}
 
 This can be implememnted using a recursive `getParentStyle` function, and by setting some defaults:
 
-```ts {1-20,23-30}
+```ts
 const defaults: Record<string, any> = {
   color: 'black'
 }
@@ -647,7 +641,7 @@ const draw = (node: PDFRenderable) => {
 
 Let's make the example a bit more interesting. I will use `v-for`, to make sure everything works as it should:
 
-```ts {3-7,9-18}
+```js {3-7,9-17}
 const App = defineComponent({
   components: { Text, View },
   data() {
@@ -671,8 +665,13 @@ const App = defineComponent({
 
 It works:
 
-<p align="center">
 ![](https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-final.png)
-</p>
 
 ## Conclusion
+
+We explored creating a simple custom renderer. The main topics covered were:
+
+- Typing `createRenderer` - `HostNode` and `HostElement` types
+- Implementing `nodeOps` for your renderer
+
+You can grab the [source code here](https://github.com/lmiller1990/vue-pdf-renderer-demo) to try it out.

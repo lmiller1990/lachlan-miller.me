@@ -1,9 +1,6 @@
 <h2>Writing a Custom Renderer - Vue.js 3</h2>
 <p>Among many other cool features, Vue.js 3 is much more modular than Vue.js 3. The project is consists of <a href="https://github.com/vuejs/vue-next">many different packages</a>, making it even more flexible and customizable.</p>
 <p>One of the more interesting architectural changes is the decoupled renderer and runtime. This makes it much easier to build custom renderers.</p>
-<p>
-  You can get the source code as it appears in this article <a href="https://github.com/lmiller1990/vue-pdf-renderer-demo/tree/article-final">here</a>.
-</p>
 <h2>What is a Custom Renderer?</h2>
 <p>Vue consists of several &quot;systems&quot;. There is the reactivity system, it's custom component system, a virtual DOM, and several others. A renderer is what takes the output of the virtual DOM and <em>renders</em> it using some UI layer. <a href="https://github.com/vuejs/vue-next/tree/master/packages/runtime-dom">The DOM renderer</a> (the only one that ships with Vue) could be considered only official renderer, and as such, the reference renderer.</p>
 <p>So, a custom renderer is renderer that targets anything other than the DOM.</p>
@@ -41,9 +38,7 @@
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <p>And get this:</p>
-<p align="center">
-<img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-final.png" alt="">
-</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-final.png" alt=""></p>
 <p>I will be using <a href="https://pdfkit.org/">PDFKit</a> to produce the PDF. This is just an <em>example</em> - a fully featured PDF Renderer would be much more complex.</p>
 <p>Let's get started!</p>
 <h2>Anatomy of a Custom Renderer</h2>
@@ -397,9 +392,7 @@ stream.on(<span class="hljs-string">&#x27;finish&#x27;</span>, <span class="hljs
 })
 </code></pre>
 <p>Finally, we have a PDF!</p>
-<p align="center">
-<img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-2.png" alt="">
-</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-2.png" alt=""></p>
 <p>Now we get to have some fun and add <em>styles</em>.</p>
 <h2>Adding Styles</h2>
 <p>I have decided all styles should be defined in a <code>styles</code> attribute. I have decided to only support a limited subset of CSS, much like react-native and <a href="https://react-pdf.org/styling#valid-css-properties"><code>react-pdf</code></a>.</p>
@@ -464,27 +457,59 @@ insert {
 }
 </code></pre>
 <p>Now we have red text:</p>
-<p align="center">
-<img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-3.png" alt="">
-</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-3.png" alt=""></p>
 <h2>Supporting Default Styles</h2>
 <p>We have cascading styles - anything nested under a <code>&lt;View&gt;</code> with <code>{color: 'red'}</code> will be red. The way PDFKit works is not exactly what we want, though - once you do <code>pdf.fill('red')</code>, everything will be red until you change the color to something else. What we want to do is mimic a browser - to figure out the correct color, we should recurse up the tree until we find a parent with <code>:styles=&quot;{color: '...'}&quot;</code>. If we don't, we should apply some default color. Black seems like the obvious choice.</p>
 <p>This can be implememnted using a recursive <code>getParentStyle</code> function, and by setting some defaults:</p>
-<pre class="language-ts"><code class="language-ts"><span class="highlighted-line"><pre class="hljs"><code><span class="hljs-keyword">const</span> defaults: Record&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">any</span>&gt; = {</span><span class="highlighted-line">  <span class="hljs-attr">color</span>: <span class="hljs-string">&#x27;black&#x27;</span></span><span class="highlighted-line">}</span><span class="highlighted-line"></span><span class="highlighted-line"><span class="hljs-keyword">const</span> getParentStyle = (attr: <span class="hljs-built_in">string</span>, <span class="hljs-attr">parent</span>: PDFRenderable): <span class="hljs-function"><span class="hljs-params">string</span> =&gt;</span> {</span><span class="highlighted-line">  <span class="hljs-comment">// we are at the root &lt;Document&gt; element.</span></span><span class="highlighted-line">  <span class="hljs-keyword">if</span> (parent <span class="hljs-keyword">instanceof</span> PDFDocumentElement) {</span><span class="highlighted-line">    <span class="hljs-keyword">return</span> defaults[attr]</span><span class="highlighted-line">  }</span><span class="highlighted-line"></span><span class="highlighted-line">  <span class="hljs-comment">// check parent for style.</span></span><span class="highlighted-line">  <span class="hljs-keyword">if</span> (parent <span class="hljs-keyword">instanceof</span> PDFElement) {</span><span class="highlighted-line">    <span class="hljs-keyword">if</span> (parent.styles[attr]) {</span><span class="highlighted-line">      <span class="hljs-keyword">return</span> parent.styles[attr]</span><span class="highlighted-line">    }</span><span class="highlighted-line">  }</span><span class="highlighted-line"></span><span class="highlighted-line">  <span class="hljs-comment">// recurse up the tree.</span></span><span class="highlighted-line">  <span class="hljs-keyword">return</span> getParentStyle(attr, nodeMap[parent.parent!])</span><span class="highlighted-line">}</span>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> defaults: Record&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">any</span>&gt; = {
+  <span class="hljs-attr">color</span>: <span class="hljs-string">&#x27;black&#x27;</span>
+}
+
+<span class="hljs-keyword">const</span> getParentStyle = (attr: <span class="hljs-built_in">string</span>, <span class="hljs-attr">parent</span>: PDFRenderable): <span class="hljs-function"><span class="hljs-params">string</span> =&gt;</span> {
+  <span class="hljs-comment">// we are at the root &lt;Document&gt; element.</span>
+  <span class="hljs-keyword">if</span> (parent <span class="hljs-keyword">instanceof</span> PDFDocumentElement) {
+    <span class="hljs-keyword">return</span> defaults[attr]
+  }
+
+  <span class="hljs-comment">// check parent for style.</span>
+  <span class="hljs-keyword">if</span> (parent <span class="hljs-keyword">instanceof</span> PDFElement) {
+    <span class="hljs-keyword">if</span> (parent.styles[attr]) {
+      <span class="hljs-keyword">return</span> parent.styles[attr]
+    }
+  }
+
+  <span class="hljs-comment">// recurse up the tree.</span>
+  <span class="hljs-keyword">return</span> getParentStyle(attr, nodeMap[parent.parent!])
+}
+
 <span class="hljs-keyword">const</span> draw = <span class="hljs-function">(<span class="hljs-params">node: PDFRenderable</span>) =&gt;</span> {
-<span class="highlighted-line">  <span class="hljs-keyword">if</span> (node <span class="hljs-keyword">instanceof</span> PDFElement) {</span><span class="highlighted-line">    <span class="hljs-keyword">if</span> (node.styles.color) {</span><span class="highlighted-line">      pdf.fill(node.styles.color)</span><span class="highlighted-line">    } <span class="hljs-keyword">else</span> {</span><span class="highlighted-line">      <span class="hljs-comment">// @ts-ignore</span></span><span class="highlighted-line">      pdf.fill(getParentStyle(<span class="hljs-string">&#x27;color&#x27;</span>, nodeMap[node.parent]))</span><span class="highlighted-line">    }</span><span class="highlighted-line">  }</span>
+  <span class="hljs-keyword">if</span> (node <span class="hljs-keyword">instanceof</span> PDFElement) {
+    <span class="hljs-keyword">if</span> (node.styles.color) {
+      pdf.fill(node.styles.color)
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-comment">// @ts-ignore</span>
+      pdf.fill(getParentStyle(<span class="hljs-string">&#x27;color&#x27;</span>, nodeMap[node.parent]))
+    }
+  }
+
   <span class="hljs-keyword">if</span> (node <span class="hljs-keyword">instanceof</span> PDFTextNode) {
     pdf.text(node.value)
   }
 }
-</code></pre></code></pre><p>Let's make the example a bit more interesting. I will use <code>v-for</code>, to make sure everything works as it should:</p>
+</code></pre>
+<p>Let's make the example a bit more interesting. I will use <code>v-for</code>, to make sure everything works as it should:</p>
 <pre class="hljs"><code><span class="hljs-keyword">const</span> App = defineComponent({
   <span class="hljs-attr">components</span>: { Text, View },
 <span class="highlighted-line">  <span class="hljs-function"><span class="hljs-title">data</span>(<span class="hljs-params"></span>)</span> {</span><span class="highlighted-line">    <span class="hljs-keyword">return</span> {</span><span class="highlighted-line">      <span class="hljs-attr">colors</span>: [<span class="hljs-string">&#x27;red&#x27;</span>, <span class="hljs-string">&#x27;blue&#x27;</span>, <span class="hljs-string">&#x27;green&#x27;</span>]</span><span class="highlighted-line">    }</span><span class="highlighted-line">  },</span>  <span class="hljs-attr">render</span>: compile(<span class="hljs-string">`
-<span class="highlighted-line">    &lt;View&gt;</span><span class="highlighted-line">      &lt;View :styles=&quot;{color: &#x27;red&#x27;}&quot;&gt;</span><span class="highlighted-line">        &lt;Text v-for=&quot;color in colors&quot; :styles=&quot;{color}&quot;&gt;</span><span class="highlighted-line">          {{ color }}</span><span class="highlighted-line">        &lt;/Text&gt;</span><span class="highlighted-line">      &lt;/View&gt;</span><span class="highlighted-line">      &lt;Text&gt;Default&lt;/Text&gt;</span><span class="highlighted-line">      &lt;Text :styles=&quot;{color: &#x27;yellow&#x27;}&quot;&gt;Yellow&lt;/Text&gt;</span><span class="highlighted-line">    &lt;/View&gt;</span><span class="highlighted-line">  `</span>)</span>})
+<span class="highlighted-line">    &lt;View&gt;</span><span class="highlighted-line">      &lt;View :styles=&quot;{color: &#x27;red&#x27;}&quot;&gt;</span><span class="highlighted-line">        &lt;Text v-for=&quot;color in colors&quot; :styles=&quot;{color}&quot;&gt;</span><span class="highlighted-line">          {{ color }}</span><span class="highlighted-line">        &lt;/Text&gt;</span><span class="highlighted-line">      &lt;/View&gt;</span><span class="highlighted-line">      &lt;Text&gt;Default&lt;/Text&gt;</span><span class="highlighted-line">      &lt;Text :styles=&quot;{color: &#x27;yellow&#x27;}&quot;&gt;Yellow&lt;/Text&gt;</span><span class="highlighted-line">    &lt;/View&gt;</span>  `</span>)
+})
 </code></pre>
 <p>It works:</p>
-<p align="center">
-<img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-final.png" alt="">
-</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/vue-pdf-renderer-demo/article/screenshots/SS-final.png" alt=""></p>
 <h2>Conclusion</h2>
+<p>We explored creating a simple custom renderer. The main topics covered were:</p>
+<ul>
+<li>Typing <code>createRenderer</code> - <code>HostNode</code> and <code>HostElement</code> types</li>
+<li>Implementing <code>nodeOps</code> for your renderer</li>
+</ul>
+<p>You can grab the <a href="https://github.com/lmiller1990/vue-pdf-renderer-demo">source code here</a> to try it out.</p>
