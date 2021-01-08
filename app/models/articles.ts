@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "ESNext Pipelines",
+    slug: "esnext-pipelines",
+    published: "2021-01-08",
+    description: "Learn about the completing proposals for the pipeline operator in JavaScript.",
+    image: "https://images.unsplash.com/photo-1538474705339-e87de81450e8?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
+  },
+  {
     title: "PDF Customer Renderer for Vue.js 3",
     slug: "vue-3-pdf-customer-renderer",
     published: "2020-12-14",

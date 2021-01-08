@@ -1,0 +1,161 @@
+<p>Many functional language have a <em>pipeline</em> operator. Examples include Elm:</p>
+<pre class="hljs"><code><span class="hljs-string">&quot;Hello everyone&quot;</span> 
+  |&gt; left <span class="hljs-number">5</span> 
+  |&gt; toLower 
+  |&gt; append <span class="hljs-string">&quot;I say &quot;</span> <span class="hljs-comment">-- &quot;I say hello&quot;</span>
+</code></pre>
+<p>Elixir:</p>
+<pre class="hljs"><code><span class="hljs-string">&quot;Elixir rocks&quot;</span>
+  |&gt; <span class="hljs-type">String</span>.upcase() 
+  |&gt; <span class="hljs-type">String</span>.split()
+#=&gt; [<span class="hljs-string">&quot;ELIXIR&quot;</span>, <span class="hljs-string">&quot;ROCKS&quot;</span>]
+</code></pre>
+<p>F#</p>
+<pre class="hljs"><code><span class="hljs-keyword">let</span> finalSeq = 
+    seq { <span class="hljs-number">0.</span><span class="hljs-number">.10</span> }
+    |&gt; Seq.filter (<span class="hljs-keyword">fun</span> c -&gt; (c % <span class="hljs-number">2</span>) = <span class="hljs-number">0</span>)
+    |&gt; Seq.map ((*) <span class="hljs-number">2</span>)
+    |&gt; Seq.map (sprintf <span class="hljs-string">&quot;The value is %i.&quot;</span>)
+</code></pre>
+<p>You see the syntax - lots of <code>|&gt;</code> which let you modify data in some way. Why is this a useful feature, and why would we want it in JavaScript?</p>
+<p>Pipelines make it easy to chain functions together. Here is the classic example listed in the <a href="https://github.com/tc39/proposal-pipeline-operator">tc39 proposal</a>:</p>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doubleSay</span> (<span class="hljs-params">str</span>) </span>{
+  <span class="hljs-keyword">return</span> str + <span class="hljs-string">&quot;, &quot;</span> + str
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">capitalize</span> (<span class="hljs-params">str</span>) </span>{
+  <span class="hljs-keyword">return</span> str[<span class="hljs-number">0</span>].toUpperCase() + str.substring(<span class="hljs-number">1</span>)
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">exclaim</span> (<span class="hljs-params">str</span>) </span>{
+  <span class="hljs-keyword">return</span> str + <span class="hljs-string">&#x27;!&#x27;</span>
+}
+
+<span class="hljs-keyword">let</span> result = <span class="hljs-string">&quot;hello&quot;</span>
+  |&gt; doubleSay
+  |&gt; capitalize
+  |&gt; exclaim
+
+result <span class="hljs-comment">//=&gt; &quot;Hello, hello!&quot;</span>
+</code></pre>
+<p>The value to the <em>left</em> of the pipeline is passed at the first argument to the next function in the pipeline. Without using the pipeline operator, you'd have to write something like this:</p>
+<pre class="hljs"><code><span class="hljs-keyword">let</span> result = exclaim(capitalize(doubleSay(<span class="hljs-string">&quot;hello&quot;</span>)));
+result <span class="hljs-comment">//=&gt; &quot;Hello, hello!&quot;</span>
+</code></pre>
+<p>Not that bad, but one can certainly make a case for the pipeline version as more readable.</p>
+<p>With so many other languages having a pipeline operator, there is a lot of prior literature to go on when considering how JavaScript's pipeline might look. So much so that there are three proposals:</p>
+<ul>
+<li><a href="https://github.com/tc39/proposal-pipeline-operator">&quot;simple&quot; pipeline</a></li>
+<li><a href="https://github.com/js-choi/proposal-smart-pipelines">&quot;smart&quot; pipeline</a></li>
+<li><a href="https://github.com/valtech-nyc/proposal-fsharp-pipelines">&quot;fsharp&quot; pipeline</a></li>
+</ul>
+<p>Let's take a look at each, and consider the pros and cons.</p>
+<h2>The Simple Pipeline</h2>
+<p>We already saw and example of the simple pipeline above. But what about functions with multiple arguments? The examples above all have a single argument. Different languages handle this differently.</p>
+<p>In Elixir, for example, the first argument to the next function in the pipeline will always be the previous value. For example there is a function, <code>Enum.map</code>. It takes two arguments - the array to map over, and the callback to apply to each item. Basic usage is:</p>
+<pre class="hljs"><code>## without a pipeline
+result = Enum.map([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>], fn x -&gt; x + <span class="hljs-number">2</span> end) 
+result #=&gt; [<span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]
+
+## <span class="hljs-keyword">with</span> a pipeline
+# the array is automatically used <span class="hljs-keyword">as</span> the
+# first argument to <span class="hljs-string">`Enum.map`</span>
+[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>] |&gt; Enum.map(fn x -&gt; x + <span class="hljs-number">2</span> end)
+</code></pre>
+<p>JavaScript is not really designed in such a manner. There are some alternatives. You can pass a callback to <code>|&gt;</code>:</p>
+<pre class="hljs"><code>;[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>] 
+  |&gt; (<span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> x.map(<span class="hljs-function"><span class="hljs-params">y</span> =&gt;</span> y + <span class="hljs-number">2</span>))
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; [3, 4, 5]</span>
+</code></pre>
+<p>Or, slightly closer to the Elixir example:</p>
+<pre class="hljs"><code>;[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>] 
+  |&gt; (<span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> <span class="hljs-built_in">Array</span>.prototype.map.call(x, <span class="hljs-function"><span class="hljs-params">y</span> =&gt;</span> y + <span class="hljs-number">2</span>))
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; [3, 4, 5]</span>
+</code></pre>
+<p>If you combine the pipeline proposal with another proposal, <a href="https://github.com/tc39/proposal-partial-application">partial application</a>:</p>
+<pre class="hljs"><code>;[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>] 
+  |&gt; <span class="hljs-built_in">Array</span>.prototype.map.call(?, <span class="hljs-function"><span class="hljs-params">y</span> =&gt;</span> y + <span class="hljs-number">2</span>)
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; [3, 4, 5]</span>
+</code></pre>
+<p>Or if we want to get really ambitious:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> Enum = {
+  <span class="hljs-attr">map</span>: <span class="hljs-function">(<span class="hljs-params">arr, cb</span>) =&gt;</span> <span class="hljs-built_in">Array</span>.prototype.map.call(arr, cb)
+}
+
+;[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>] 
+  |&gt; Enum.map(?, <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> x + <span class="hljs-number">2</span>)
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; [3, 4, 5]</span>
+</code></pre>
+<p>Fun stuff! Let's take look at the other proposals and see what they bring to the table.</p>
+<h2>The Smart Pipeline</h2>
+<p>The <a href="https://github.com/js-choi/proposal-smart-pipelines">smart pipeline</a> combines the idea of partial application along with a pipeline operator. It uses the <code>#</code> symbol instead of <code>?</code> (note the symbol could change as the proposal evolves).</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> divide = <span class="hljs-function">(<span class="hljs-params">x, y</span>) =&gt;</span> x / y 
+
+<span class="hljs-number">10</span>
+  |&gt; divide(#, <span class="hljs-number">2</span>)
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; 5</span>
+
+<span class="hljs-number">10</span>
+  |&gt; divide(<span class="hljs-number">2</span>, #)
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; 0.2</span>
+</code></pre>
+<p>This is pretty neat. You get the power of partial application for free.</p>
+<p>The smart pipeline also has a few more features that the simple pipeline doesn't support. You can use <code>await</code> with the smart pipeline:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> asyncDouble = <span class="hljs-function"><span class="hljs-params">val</span> =&gt;</span> <span class="hljs-built_in">Promise</span>.resolve(val * <span class="hljs-number">2</span>)
+
+<span class="hljs-number">5</span>
+  |&gt; asyncDouble
+  |&gt; <span class="hljs-keyword">await</span> #
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; 10</span>
+</code></pre>
+<p>A more real world example might be:</p>
+<pre class="hljs"><code>fetch(<span class="hljs-string">&#x27;/music/foo.mp3&#x27;</span>)
+  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.blob())
+  .then(playBlob);
+
+<span class="hljs-comment">// becomes ...</span>
+
+<span class="hljs-string">&#x27;/music/foo.mp3&#x27;</span>
+  |&gt; <span class="hljs-keyword">await</span> fetch(#)
+  |&gt; <span class="hljs-keyword">await</span> #.blob()
+  |&gt; playBlob
+</code></pre>
+<p>Or:</p>
+<pre class="hljs"><code>{
+  <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://example.com/&#x27;</span>
+  <span class="hljs-keyword">const</span> response =
+    <span class="hljs-keyword">await</span> fetch(url, { <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;HEAD&#x27;</span> })
+  <span class="hljs-keyword">const</span> contentType =
+    response.headers.get(<span class="hljs-string">&#x27;content-type&#x27;</span>)
+  <span class="hljs-built_in">console</span>.log(contentType);
+}
+
+<span class="hljs-comment">// becomes ...</span>
+<span class="hljs-string">&#x27;https://example.com/&#x27;</span>
+  |&gt; <span class="hljs-keyword">await</span> fetch(#, { <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;HEAD&#x27;</span> })
+  |&gt; #.headers.get(<span class="hljs-string">&#x27;content-type&#x27;</span>)
+  |&gt; <span class="hljs-built_in">console</span>.log
+</code></pre>
+<p>You can avoid a lot of meaningless temporary variables by using the pipeline operator.</p>
+<h2>The FSharp Pipeline</h2>
+<p>There is one more proposal: <a href="https://github.com/valtech-nyc/proposal-fsharp-pipelines">fsharp pipelines</a>. This is my favorite. Instead of using a <code>#</code> symbol to mimic partial application, it uses a callback based approach. Here are the previous examples using the fsharp pipeline operator:</p>
+<pre class="hljs"><code><span class="hljs-number">10</span>
+  |&gt; <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> divide(x, <span class="hljs-number">2</span>)
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; 5</span>
+
+<span class="hljs-number">10</span>
+  |&gt; <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> divide(<span class="hljs-number">2</span>, x)
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; 0.2</span>
+
+<span class="hljs-keyword">const</span> addTwo = <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> x + <span class="hljs-number">2</span>
+
+<span class="hljs-keyword">const</span> asyncDouble = <span class="hljs-function"><span class="hljs-params">val</span> =&gt;</span> <span class="hljs-built_in">Promise</span>.resolve(val * <span class="hljs-number">2</span>)
+
+<span class="hljs-number">5</span>
+  |&gt; asyncDouble
+  |&gt; <span class="hljs-keyword">await</span>
+  |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; 10</span>
+</code></pre>
+<p>You also get flexibility similar to that offered by partial application by using a callback. Neat. This one feels the cleanest to me and is my favorite.</p>
+<h2>Conclusion</h2>
+<p>There you have it - the simple pipeline proposal and two more advanced proposals. There are a ton more examples - <a href="https://github.com/js-choi/proposal-smart-pipelines/blob/master/core-real-examples.md#whatwg-fetch-standard">see here</a>. See what you can come up with!</p>
