@@ -112,12 +112,12 @@ If you combine the pipeline proposal with another proposal, [partial application
 Or if we want to get really ambitious:
 
 ```js
-const Enum = {
+const Arr = {
   map: (arr, cb) => Array.prototype.map.call(arr, cb)
 }
 
 ;[1, 2, 3] 
-  |> Enum.map(?, x => x + 2)
+  |> Arr.map(?, x => x + 2)
   |> console.log //=> [3, 4, 5]
 ```
 
@@ -211,8 +211,76 @@ const asyncDouble = val => Promise.resolve(val * 2)
   |> console.log //=> 10
 ```
 
-You also get flexibility similar to that offered by partial application by using a callback. Neat. This one feels the cleanest to me and is my favorite.
+You also get flexibility similar to that offered by partial application by using a callback. Neat. This one feels the cleanest to me and is my favorite of the two "advanced" pipeline proposals.
+
+## How Functional Can We Get?
+
+Let's see what we can build if we go a little crazy. Instead of values and objects having methods, we will assume the only way to operate on them is using functions, which are stored in modules (similar to functional languages like Elixir). Whenever you call a module method and pass in a value or object, you get a new value or object back - no mutation.
+
+First some simple modules:
+
+```js
+const Arr = {
+  forEach: (...args) => Array.prototype.forEach.call(...args),
+  reduce: (...args) => Array.prototype.reduce.call(...args),
+  map: (...args) => Array.prototype.map.call(...args),
+  filter: (...args) => Array.prototype.filter.call(...args),
+  length: (val) => val.length,
+  join: (...args) => Array.prototype.join.call(...args),
+}
+
+const Num = {
+  parseInt: (...args) => parseInt(...args)
+}
+
+const Str = {
+  trim: (...args) => String.prototype.trim.call(...args),
+  length: val => val.length,
+  split: (...args) => String.prototype.split.call(...args),
+}
+```
+
+We will implement the [String Calculator Kata](https://github.com/wix/tdd-katas#string-calculator). I have simplified it a bit to keep the post short. 
+
+The rules are:
+
+- Two or more numbers, comma delimited, returns the sum '1,  2,3, 4   ' => 10
+- Consider the numbers may have whitespace
+- Negative numbers throw an exception with the message '-1,2,-3' => 'negatives not allowed: -1,-3'
+
+Here is the implementation. I am using the fsharp pipeline operator along with the partial application proposal. An exercise would be to rewrite it only using the smart pipeline proposal, or as-is but without using partial application.
+
+```js
+const input = '1,2  ,10  '
+
+const validate = val => {
+  if (val < 0) {
+    throw Error(`Negatives not allowed: `)
+  }
+}
+
+const toNumber = val => val 
+  |> Str.trim 
+  |> Num.parseInt(?, 10)
+
+const sanitized = input
+  |> Str.split(?, ',')
+  |> Arr.map(?, toNumber)
+
+const negatives = Arr.filter(sanitized, x => x < 0)
+
+if (Arr.length(negatives) > 0) {
+  const invalid = Arr.join(negatives, ',')
+  throw Error(`No negatives allowed: ${invalid}`)
+}
+
+sanitized
+  |> Arr.reduce(?, (acc, curr) => acc + curr, 0)
+  |> x => console.log(`Sum: ${x}`)
+```
+
+Could this be how we write JavaScript in the future? It might seem unbelievable, but who would have expected to have `=>`, `...` or `import` 10 years ago?
 
 ## Conclusion
 
-There you have it - the simple pipeline proposal and two more advanced proposals. There are a ton more examples - [see here](https://github.com/js-choi/proposal-smart-pipelines/blob/master/core-real-examples.md#whatwg-fetch-standard). See what you can come up with!
+There you have it - the simple pipeline proposal and two more advanced proposals, and some fun things you can do it. There are a ton more examples - [see here](https://github.com/js-choi/proposal-smart-pipelines/blob/master/core-real-examples.md#whatwg-fetch-standard). See what you can come up with!
