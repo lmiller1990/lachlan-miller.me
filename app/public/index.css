@@ -72,6 +72,10 @@ blockquote {
   margin: 0 0 10px 0;
 }
 
+blockquote > p {
+  padding: 0;
+}
+
 pre {
   background: #f5f2f0;
   padding: 10px;
@@ -136,6 +140,10 @@ input {
 
 button:disabled {
   opacity: 0.5;
+}
+
+strong {
+  font-weight: bold;
 }
 
 /** app specific **/

@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "Decoding Variable Length Quantity (VLQ) for Source Maps",
+    slug: "decoding-variable-length-quantity-vlq-for-source-maps",
+    published: "2021-01-19",
+    description: "Write a function to decode source map varible length quantity (VLQ).",
+    image: "https://images.unsplash.com/photo-1569605803663-e9337d901ff9?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1949&q=80"
+  },
+  {
     title: "ESNext Pipelines",
     slug: "esnext-pipelines",
     published: "2021-01-08",
