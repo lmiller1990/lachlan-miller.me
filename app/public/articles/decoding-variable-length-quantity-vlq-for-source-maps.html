@@ -33,7 +33,10 @@
   <span class="hljs-string">&quot;mappings&quot;</span>: <span class="hljs-string">&quot;AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA&quot;</span>
 }
 </code></pre>
-<p>The main thing we are interested in is <code>mappings</code>: <code>&quot;AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA&quot;</code>. This incredibly compact jumble of letters tells us that <code>var</code> in <code>greet.js</code> corresponds to <code>const</code> in <code>greet.ts</code>, as well as how the rest of it maps up... if we can decode it.</p>
+<p>The main thing we are interested in is <code>mappings</code>:</p>
+<pre class="hljs"><code>&quot;AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA&quot;
+</code></pre>
+<p>This incredibly compact jumble of letters tells us that <code>var</code> in <code>greet.js</code> corresponds to <code>const</code> in <code>greet.ts</code>, as well as how the rest of it maps up... if we can decode it.</p>
 <h2>Variable Length Quantity</h2>
 <p>These letters are variable length quantity - a very concise way of encoding large numbers. To hint at where this is all leading, if you decode <code>AAAA</code>, you get an array of numbers: <code>[0, 0, 0, 0]</code>. <code>IAAM</code> gives us <code>[4, 0, 0, 6]</code>. The next article will go in depth on what each of these numbers means, but basically they map a row and column in the compiled JavaScript to the original TypeScript:</p>
 <p><img src="https://raw.githubusercontent.com/lmiller1990/source-map-visualizer/main/source-maps-diagram.png" alt="source-map-diagram"></p>

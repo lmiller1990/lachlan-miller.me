@@ -45,7 +45,13 @@ var greet = function (name) {
 }
 ```
 
-The main thing we are interested in is `mappings`: `"AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA"`. This incredibly compact jumble of letters tells us that `var` in `greet.js` corresponds to `const` in `greet.ts`, as well as how the rest of it maps up... if we can decode it. 
+The main thing we are interested in is `mappings`: 
+
+```
+"AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA"
+``` 
+
+This incredibly compact jumble of letters tells us that `var` in `greet.js` corresponds to `const` in `greet.ts`, as well as how the rest of it maps up... if we can decode it. 
 
 ## Variable Length Quantity
 
