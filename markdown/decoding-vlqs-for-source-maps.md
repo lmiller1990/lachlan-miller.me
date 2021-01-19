@@ -51,7 +51,7 @@ The main thing we are interested in is `mappings`: `"AAAA,IAAM,KAAK,GAAG,UAAC,IA
 
 These letters are variable length quantity - a very concise way of encoding large numbers. To hint at where this is all leading, if you decode `AAAA`, you get an array of numbers: `[0, 0, 0, 0]`. `IAAM` gives us `[4, 0, 0, 6]`. The next article will go in depth on what each of these numbers means, but basically they map a row and column in the compiled JavaScript to the original TypeScript:
 
-source-maps-1
+![source-map-diagram](https://raw.githubusercontent.com/lmiller1990/source-map-visualizer/main/source-maps-diagram.png)
 
 This brings us to the goal of this post: decoding the VLQs to arrays of numbers.
 
@@ -325,6 +325,8 @@ Next is `C` which maps to `000010`. Last iteration - there is no continuation bi
 - `value`: `1011111010 | 100000000000 = 101011111010`
 
 Finally, we see if the final bit is 0 for positive or 1 for negative, truncate it and return the value. In this case it's positive. so we return `+10101111101`, which gives us 1405. A bit messy, but we did it, and learned a thing or two along the way. 
+
+## The Final Implementation 
 
 The final implementation is show below. It has a lot of temporary variables for clarity. It could be refactored to be much more concise.
 
