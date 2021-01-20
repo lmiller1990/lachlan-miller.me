@@ -1,6 +1,10 @@
 <h2>Decoding Variable Length Quantity for Source Maps</h2>
 <p>This is the first article in a series on source maps. We will be building an app to show the mapping between some TypeScript code and the compiled JavaScript using source maps. In order to understand exactly how everything works, instead of using libraries like <a href="https://www.npmjs.com/package/source-map"><code>source-map</code></a> or <a href="https://www.npmjs.com/package/vlq"><code>vlq</code></a>, we will write our own decoder and parser from scratch!</p>
-<p>The main resources I used when learning about source maps were:</p>
+<p>You can watch a video version of this post on my <a href="https://youtube.com/c/LachlanMiller">Youtube channel</a>.</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/uzRbPp4rC4M" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<p>Here are some useful resources I used for this article:</p>
 <ul>
 <li><a href="https://sokra.github.io/source-map-visualization/">Source Map Visualizer</a> by Tobias Koppers of Webpack fame</li>
 <li><a href="https://evanw.github.io/source-map-visualization/">Source Map Visualizer</a> by Evan Wallace of Figma fame</li>
@@ -33,10 +37,13 @@
   <span class="hljs-string">&quot;mappings&quot;</span>: <span class="hljs-string">&quot;AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA&quot;</span>
 }
 </code></pre>
-<p>The main thing we are interested in is <code>mappings</code>: <code>&quot;AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA&quot;</code>. This incredibly compact jumble of letters tells us that <code>var</code> in <code>greet.js</code> corresponds to <code>const</code> in <code>greet.ts</code>, as well as how the rest of it maps up... if we can decode it.</p>
+<p>The main thing we are interested in is <code>mappings</code>:</p>
+<pre class="hljs"><code>&quot;AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA&quot;
+</code></pre>
+<p>This incredibly compact jumble of letters tells us that <code>var</code> in <code>greet.js</code> corresponds to <code>const</code> in <code>greet.ts</code>, as well as how the rest of it maps up... if we can decode it.</p>
 <h2>Variable Length Quantity</h2>
 <p>These letters are variable length quantity - a very concise way of encoding large numbers. To hint at where this is all leading, if you decode <code>AAAA</code>, you get an array of numbers: <code>[0, 0, 0, 0]</code>. <code>IAAM</code> gives us <code>[4, 0, 0, 6]</code>. The next article will go in depth on what each of these numbers means, but basically they map a row and column in the compiled JavaScript to the original TypeScript:</p>
-<p>source-maps-1</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/source-map-visualizer/main/source-maps-diagram.png" alt="source-map-diagram"></p>
 <p>This brings us to the goal of this post: decoding the VLQs to arrays of numbers.</p>
 <h2>Segments, Fields and Base 64</h2>
 <p>The <code>mappings</code> property has many segments, divided up by <code>,</code>. Each one has several fields. <code>AAAA</code> maps to <code>[0, 0, 0, 0]</code> - which has four fields. Each line is separated by a <code>;</code>. Our mappings field has two <code>;</code> - three lines total, which matches up to the compiled JavaScript. The source map always maps from the compiled code to the original code - not the other way around. This means the number of lines represented in the source map will always be the same as the number of lines in the compiled code.</p>
@@ -242,6 +249,7 @@
 <li><code>value</code>: <code>1011111010 | 100000000000 = 101011111010</code></li>
 </ul>
 <p>Finally, we see if the final bit is 0 for positive or 1 for negative, truncate it and return the value. In this case it's positive. so we return <code>+10101111101</code>, which gives us 1405. A bit messy, but we did it, and learned a thing or two along the way.</p>
+<h2>The Final Implementation</h2>
 <p>The final implementation is show below. It has a lot of temporary variables for clarity. It could be refactored to be much more concise.</p>
 <pre class="hljs"><code><span class="hljs-keyword">const</span> charToInteger: Record&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">number</span>&gt; = {}
 

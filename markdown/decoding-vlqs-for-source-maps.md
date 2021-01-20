@@ -2,7 +2,9 @@
 
 This is the first article in a series on source maps. We will be building an app to show the mapping between some TypeScript code and the compiled JavaScript using source maps. In order to understand exactly how everything works, instead of using libraries like [`source-map`](https://www.npmjs.com/package/source-map) or [`vlq`](https://www.npmjs.com/package/vlq), we will write our own decoder and parser from scratch!
 
-The main resources I used when learning about source maps were:
+You can watch a video version of this post on my [Youtube channel](https://youtube.com/c/LachlanMiller).
+
+Here are some useful resources I used for this article:
 
 - [Source Map Visualizer](https://sokra.github.io/source-map-visualization/) by Tobias Koppers of Webpack fame
 - [Source Map Visualizer](https://evanw.github.io/source-map-visualization/) by Evan Wallace of Figma fame
@@ -45,13 +47,19 @@ var greet = function (name) {
 }
 ```
 
-The main thing we are interested in is `mappings`: `"AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA"`. This incredibly compact jumble of letters tells us that `var` in `greet.js` corresponds to `const` in `greet.ts`, as well as how the rest of it maps up... if we can decode it. 
+The main thing we are interested in is `mappings`: 
+
+```
+"AAAA,IAAM,KAAK,GAAG,UAAC,IAAY;IACzB,OAAO,WAAS,IAAM,CAAA;AACxB,CAAC,CAAA"
+``` 
+
+This incredibly compact jumble of letters tells us that `var` in `greet.js` corresponds to `const` in `greet.ts`, as well as how the rest of it maps up... if we can decode it. 
 
 ## Variable Length Quantity
 
 These letters are variable length quantity - a very concise way of encoding large numbers. To hint at where this is all leading, if you decode `AAAA`, you get an array of numbers: `[0, 0, 0, 0]`. `IAAM` gives us `[4, 0, 0, 6]`. The next article will go in depth on what each of these numbers means, but basically they map a row and column in the compiled JavaScript to the original TypeScript:
 
-source-maps-1
+![source-map-diagram](https://raw.githubusercontent.com/lmiller1990/source-map-visualizer/main/source-maps-diagram.png)
 
 This brings us to the goal of this post: decoding the VLQs to arrays of numbers.
 
@@ -325,6 +333,8 @@ Next is `C` which maps to `000010`. Last iteration - there is no continuation bi
 - `value`: `1011111010 | 100000000000 = 101011111010`
 
 Finally, we see if the final bit is 0 for positive or 1 for negative, truncate it and return the value. In this case it's positive. so we return `+10101111101`, which gives us 1405. A bit messy, but we did it, and learned a thing or two along the way. 
+
+## The Final Implementation 
 
 The final implementation is show below. It has a lot of temporary variables for clarity. It could be refactored to be much more concise.
 
