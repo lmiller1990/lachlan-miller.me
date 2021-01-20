@@ -2,7 +2,9 @@
 
 This is the first article in a series on source maps. We will be building an app to show the mapping between some TypeScript code and the compiled JavaScript using source maps. In order to understand exactly how everything works, instead of using libraries like [`source-map`](https://www.npmjs.com/package/source-map) or [`vlq`](https://www.npmjs.com/package/vlq), we will write our own decoder and parser from scratch!
 
-The main resources I used when learning about source maps were:
+You can watch a video version of this post on my [Youtube channel](https://youtube.com/c/LachlanMiller).
+
+Here are some useful resources I used for this article:
 
 - [Source Map Visualizer](https://sokra.github.io/source-map-visualization/) by Tobias Koppers of Webpack fame
 - [Source Map Visualizer](https://evanw.github.io/source-map-visualization/) by Evan Wallace of Figma fame
