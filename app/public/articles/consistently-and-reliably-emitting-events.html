@@ -1,3 +1,10 @@
+
+<style>
+code {
+  color: black;
+}
+</style>
+
 <h4>Consistently and Reliably Emitting Events  </h4><p>
 Vue's  primary  mechanic  for  passing  data   <em>down</em> to  components  is   <code>props</code>.  In  contrast,  when  components  needs  to  communicate  with  another  component  higher  in  the  hierachy,  you  do  so  by   <em>emitting events</em>,  with   <code>$emit</code>  (Options  API)  and   <code>emit</code>  (Composition  API) . </p><p>
 Let's  see  some  examples  on  how  this  works,  and  some  guidelines  we  can  set  to  keep  things  clean  and  understandable. </p><h4> Starting Simple</h4><p>
