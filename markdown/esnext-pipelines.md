@@ -1,3 +1,21 @@
+## A Futuristic Functional Language for Web Dev - ESNext Pipelines
+
+Welcome to the future. Check out this snippet from a popular web programming language that's gaining traction - it's a functional programming language where all values are immutable:
+
+```js
+const sanitized = input
+  |> Str.split(?, ',')
+  |> Arr.map(?, toNumber)
+```
+
+As you can see it has a number operators like `|>` (pipeline) and `?` (partial application).
+
+What year is it, and language are you coding in, you ask? The year is 2021 - and the language is *JavaScript*!
+
+You can watch a video version of this post on my [Youtube channel](https://youtube.com/c/LachlanMiller).
+
+## What is `|>`? Introducing the Pipeline Operator
+
 Many functional language have a *pipeline* operator. Examples include Elm:
 
 ```elm
@@ -26,9 +44,11 @@ let finalSeq =
     |> Seq.map (sprintf "The value is %i.")
 ```
 
-You see the syntax - lots of `|>` which let you modify data in some way. Why is this a useful feature, and why would we want it in JavaScript?
+You see the syntax - lots of `|>` which let you modify data in some way. Why is this a useful feature, and why would we want it in JavaScript? Pipelines make it easy to *chain functions together*. 
 
-Pipelines make it easy to chain functions together. Here is the classic example listed in the [tc39 proposal](https://github.com/tc39/proposal-pipeline-operator):
+## Pipelines are Available JavaScript Today!
+
+There is several proposals for pipelines to become part of JavaScript. Here is the classic example listed in the [tc39 proposal](https://github.com/tc39/proposal-pipeline-operator), the repository that hosts all the proposal for new JavaScript features:
 
 ```js
 function doubleSay (str) {
@@ -121,6 +141,14 @@ const Arr = {
   |> console.log //=> [3, 4, 5]
 ```
 
+This is starting to look more like the original snippet from the introduction:
+
+```js
+const sanitized = input
+  |> Str.split(?, ',')
+  |> Arr.map(?, toNumber)
+```
+
 Fun stuff! Let's take look at the other proposals and see what they bring to the table.
 
 ## The Smart Pipeline
@@ -211,7 +239,7 @@ const asyncDouble = val => Promise.resolve(val * 2)
   |> console.log //=> 10
 ```
 
-You also get flexibility similar to that offered by partial application by using a callback. Neat. This one feels the cleanest to me and is my favorite of the two "advanced" pipeline proposals.
+You also get flexibility similar to that offered by partial application by using a callback. Neat. This one feels the cleanest to me and is my favorite of the two "advanced" pipeline proposals. You can combine it with partial application to get even more concise code.
 
 ## How Functional Can We Get?
 
@@ -276,7 +304,7 @@ if (Arr.length(negatives) > 0) {
 
 sanitized
   |> Arr.reduce(?, (acc, curr) => acc + curr, 0)
-  |> x => console.log(`Sum: ${x}`)
+  |> x => console.log(`Sum: ${x}`) //=> 13. 1 + 2 + 10
 ```
 
 Could this be how we write JavaScript in the future? It might seem unbelievable, but who would have expected to have `=>`, `...` or `import` 10 years ago?

@@ -1,3 +1,17 @@
+<h2>A Futuristic Functional Language for Web Dev - ESNext Pipelines</h2>
+<p>Welcome to the future. Check out this snippet from a popular web programming language that's gaining traction - it's a functional programming language where all values are immutable:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> sanitized = input
+  |&gt; Str.split(?, <span class="hljs-string">&#x27;,&#x27;</span>)
+  |&gt; Arr.map(?, toNumber)
+</code></pre>
+<p>As you can see it has a number operators like <code>|&gt;</code> (pipeline) and <code>?</code> (partial application).</p>
+<p>What year is it, and language are you coding in, you ask? The year is 2021 - and the language is <em>JavaScript</em>!</p>
+<p>You can watch a video version of this post on my <a href="https://youtube.com/c/LachlanMiller">Youtube channel</a>.</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/8yzrTOmvHCA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+<h2>What is <code>|&gt;</code>? Introducing the Pipeline Operator</h2>
 <p>Many functional language have a <em>pipeline</em> operator. Examples include Elm:</p>
 <pre class="hljs"><code><span class="hljs-string">&quot;Hello everyone&quot;</span> 
   |&gt; left <span class="hljs-number">5</span> 
@@ -17,8 +31,9 @@
     |&gt; Seq.map ((*) <span class="hljs-number">2</span>)
     |&gt; Seq.map (sprintf <span class="hljs-string">&quot;The value is %i.&quot;</span>)
 </code></pre>
-<p>You see the syntax - lots of <code>|&gt;</code> which let you modify data in some way. Why is this a useful feature, and why would we want it in JavaScript?</p>
-<p>Pipelines make it easy to chain functions together. Here is the classic example listed in the <a href="https://github.com/tc39/proposal-pipeline-operator">tc39 proposal</a>:</p>
+<p>You see the syntax - lots of <code>|&gt;</code> which let you modify data in some way. Why is this a useful feature, and why would we want it in JavaScript? Pipelines make it easy to <em>chain functions together</em>.</p>
+<h2>Pipelines are Available JavaScript Today!</h2>
+<p>There is several proposals for pipelines to become part of JavaScript. Here is the classic example listed in the <a href="https://github.com/tc39/proposal-pipeline-operator">tc39 proposal</a>, the repository that hosts all the proposal for new JavaScript features:</p>
 <pre class="hljs"><code><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doubleSay</span> (<span class="hljs-params">str</span>) </span>{
   <span class="hljs-keyword">return</span> str + <span class="hljs-string">&quot;, &quot;</span> + str
 }
@@ -85,6 +100,11 @@ result #=&gt; [<span class="hljs-number">3</span>, <span class="hljs-number">4</
 ;[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>] 
   |&gt; Arr.map(?, <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> x + <span class="hljs-number">2</span>)
   |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; [3, 4, 5]</span>
+</code></pre>
+<p>This is starting to look more like the original snippet from the introduction:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> sanitized = input
+  |&gt; Str.split(?, <span class="hljs-string">&#x27;,&#x27;</span>)
+  |&gt; Arr.map(?, toNumber)
 </code></pre>
 <p>Fun stuff! Let's take look at the other proposals and see what they bring to the table.</p>
 <h2>The Smart Pipeline</h2>
@@ -156,7 +176,7 @@ result #=&gt; [<span class="hljs-number">3</span>, <span class="hljs-number">4</
   |&gt; <span class="hljs-keyword">await</span>
   |&gt; <span class="hljs-built_in">console</span>.log <span class="hljs-comment">//=&gt; 10</span>
 </code></pre>
-<p>You also get flexibility similar to that offered by partial application by using a callback. Neat. This one feels the cleanest to me and is my favorite of the two &quot;advanced&quot; pipeline proposals.</p>
+<p>You also get flexibility similar to that offered by partial application by using a callback. Neat. This one feels the cleanest to me and is my favorite of the two &quot;advanced&quot; pipeline proposals. You can combine it with partial application to get even more concise code.</p>
 <h2>How Functional Can We Get?</h2>
 <p>Let's see what we can build if we go a little crazy. Instead of values and objects having methods, we will assume the only way to operate on them is using functions, which are stored in modules (similar to functional languages like Elixir). Whenever you call a module method and pass in a value or object, you get a new value or object back - no mutation.</p>
 <p>First some simple modules:</p>
@@ -212,7 +232,7 @@ result #=&gt; [<span class="hljs-number">3</span>, <span class="hljs-number">4</
 
 sanitized
   |&gt; Arr.reduce(?, <span class="hljs-function">(<span class="hljs-params">acc, curr</span>) =&gt;</span> acc + curr, <span class="hljs-number">0</span>)
-  |&gt; <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Sum: <span class="hljs-subst">${x}</span>`</span>)
+  |&gt; <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Sum: <span class="hljs-subst">${x}</span>`</span>) <span class="hljs-comment">//=&gt; 13. 1 + 2 + 10</span>
 </code></pre>
 <p>Could this be how we write JavaScript in the future? It might seem unbelievable, but who would have expected to have <code>=&gt;</code>, <code>...</code> or <code>import</code> 10 years ago?</p>
 <h2>Conclusion</h2>
