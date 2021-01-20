@@ -1,4 +1,4 @@
-import fs from 'fs'
+import * as fs from 'fs'
 import { Router, Request, Response } from 'express'
 import { articles } from './models/articles'
 import { musings } from './models/musings'
