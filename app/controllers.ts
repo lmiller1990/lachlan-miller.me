@@ -6,9 +6,13 @@ import { musings } from './models/musings'
 const router = Router()
 
 router.use('/articles/:slug', (req: Request, res: Response) => {
-  const content = fs.readFileSync(`./app/public/articles/${req.params.slug}.html`)
-  const article = articles.find(x => x.slug === req.params.slug)
-  res.render('articles/show', { content, article })
+  try {
+    const content = fs.readFileSync(`./app/public/articles/${req.params.slug}.html`)
+    const article = articles.find(x => x.slug === req.params.slug)
+    res.render('articles/show', { content, article })
+  } catch {
+    res.render('misc/404')
+  }
 })
 
 router.use('/articles', (req: Request, res: Response) => {
@@ -32,11 +36,14 @@ router.use('/vue-toronto-2020', (req: Request, res: Response) => {
 })
 
 router.use('/musings/:slug', (req: Request, res: Response) => {
-  const content = fs.readFileSync(`./app/public/musings/${req.params.slug}.html`)
-  const musing = musings.find(x => x.slug === req.params.slug)
-  res.render('musings/show', { content, musing })
+  try {
+    const content = fs.readFileSync(`./app/public/musings/${req.params.slug}.html`)
+    const musing = musings.find(x => x.slug === req.params.slug)
+    res.render('musings/show', { content, musing })
+  } catch {
+    res.render('misc/404')
+  }
 })
-
 
 router.use('/musings', (req: Request, res: Response) => {
   res.render('musings/index', { musings })
@@ -60,6 +67,10 @@ router.use('/screencasts', (req: Request, res: Response) => {
 
 router.use('/', (req: Request, res: Response) => {
   res.render('home/index')
+})
+
+router.use('*', (req: Request, res: Response) => {
+  res.render('misc/404')
 })
 
 export {
