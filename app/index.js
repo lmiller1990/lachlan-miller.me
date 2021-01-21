@@ -8,7 +8,6 @@ try {
     app.set('view engine', 'pug');
     app.set('views', './app/views');
     app.use(controllers_1.router);
-    throw Error('bad');
     app.listen('8000', function () { return console.log('Started on port 8000'); });
 }
 catch (e) {
