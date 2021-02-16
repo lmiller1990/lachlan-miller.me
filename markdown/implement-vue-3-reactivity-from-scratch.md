@@ -1,6 +1,12 @@
-Vue 3 has a super neat reactivity system based on the ES6 [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) object. In this article we build a simplified version of the reacitivity system. We will, however, stay as close the [actual source code](https://github.com/vuejs/vue-next/tree/master/packages/reactivity) as possible. The idea is to prepare you better to read and understand it.
+## Building Vue 3 Reactivity from Scratch
 
-Once we get something working, we will compare what we have written to the actual source code and see what's different, and why.
+Vue 3 has a super neat reactivity system based on the ES6 [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) object. In this article we build a simplified version of the reactivity system. We will stay as close the [Vue 3 source code](https://github.com/vuejs/vue-next/tree/master/packages/reactivity) as possible. The idea is to prepare you better to read and understand it.
+
+The source code repository is for this article is exclusive to my [GitHub Sponsors](https://github.com/sponsors/lmiller1990).
+
+By the end of this article, you'll be in a position to read through Vue's `reactivity` package and have a general understand of what's going on under the hood.
+
+As we work through our implementation, we will compare what we have written to the actual source code and see what's different, and why.
 
 The initial goal will be the following:
 
@@ -11,9 +17,10 @@ test('ref', () => {
   effect(() => {
     foo = fooref.value
   })
+  foo //=> 'foo'
   expect(foo).toBe('foo')
   fooref.value = 'bar'
-  expect(foo).toBe('bar')
+  expect(foo).toBe('bar') // foo is now 'bar' via reactivity!
 })
 ```
 
@@ -44,7 +51,7 @@ test('multiple refs', () => {
 })
 ```
 
-If you have used Vue with the Composition API, you will be familiar with `ref`. You may not have seen `effect` - that's because it's not actually exposed to the end user. What you will be familiar with is `watch` and `watchEffect` - the idea is more or less the same. All of these, as well as Vue's reactive updates, are powered by `effect` under the hood. Since we are doing everything from scratch, we will need to implement `effect`.
+If you have used Vue with the Composition API, you will be familiar with `ref`. You may not have seen `effect` - that's because it's not actually exposed to the end user. What you will be familiar with is `watch`, `watchEffect` and `computed` - the idea is more or less the same. All of these, as well as Vue's reactivity APIs, are powered by `effect` under the hood. Since we are doing everything from scratch, we will need to implement `effect` before implementing the rest.
 
 Wrapping something in `effect` sets up reactivity. Take this snippet:
 
@@ -124,7 +131,7 @@ test('ref', () => {
 })
 ```
 
-`foo` is not going to be reactively updated. What we need is some way to tell our system to *re-run* the effect every time `fooref.value` changes. This is where `Proxy` is useful.
+`foo` is not going to be reactively updated. What we need is some way to tell our system to *re-run* the effect (that is, re-run `() => { foo = fooref.value }`) every time `fooref.value` changes.
 
 First, update `RefImpl` to have a `set value` method:
 
@@ -230,25 +237,29 @@ class RefImpl {
 Assuming that `activeEffect` is `() => { foo = fooref.value }`, we can now work through `track`:
 
 ```ts
-let depsMap = targetMap.get(target)
-/**
- * targetMap is currently empty.
- * depsMap is undefined.
- */
-if (!depsMap) {
+const track = (target: object) => {
+  let depsMap = targetMap.get(target)
   /**
-   * define depsMap as a new Map
-   * add it to targetMap. The key
-   * is target, which is the fooref RefImpl
+   * targetMap is currently empty.
+   * depsMap is undefined.
    */
-  depsMap = new Map()
-  targetMap.set(target, depsMap)
+  if (!depsMap) {
+    /**
+     * define depsMap as a new Map
+     * add it to targetMap. The key
+     * is target, which is the fooref RefImpl
+     */
+    depsMap = new Map()
+    targetMap.set(target, depsMap)
+  }
+
+  // ...
 }
 ```
 
 Now targetMap looks like this:
 
-```json
+```js
 {
   [fooref]: Map // empty Map
 }
@@ -257,31 +268,35 @@ Now targetMap looks like this:
 Next we handle the dependencies:
 
 ```ts
-let deps = depsMap.get('value')
-/**
- * deps is also undefined.
- * value refers to `fooref.value`.
- * eventually we'd like to support objects
- * with keys other than just value
- */
+const track = (target: object) => {
+  // ...
 
-if (!deps) {
+  let deps = depsMap.get('value')
   /**
-   * create a new Set
-   * add it to depsMap.
-   * deps will be a Set (like an array with no duplicate values)
-   * of all the effects depending on `value`
-   *
-   * when `value` changes, we invoke all the effects!
+   * deps is also undefined.
+   * value refers to `fooref.value`.
+   * eventually we'd like to support objects
+   * with keys other than just value
    */
-  deps = new Set()
-  depsMap.set('value', deps)
+
+  if (!deps) {
+    /**
+     * create a new Set
+     * add it to depsMap.
+     * deps will be a Set (like an array with no duplicate values)
+     * of all the effects depending on `value`
+     *
+     * when `value` changes, we invoke all the effects!
+     */
+    deps = new Set()
+    depsMap.set('value', deps)
+  }
 }
 ```
 
 Now `targetMap` is something like:
 
-```json
+```js
 {
   [fooref]: Map: {
     value: Set // empty set
@@ -292,12 +307,15 @@ Now `targetMap` is something like:
 Finally we add the `activeEffect` (which is `() => { foo = fooref.value }`) to the `deps` `Set`:
 
 ```ts
-deps.add(activeEffect)
+const track = (target: object) => {
+  // ...
+  deps.add(activeEffect)
+}
 ```
 
 After `track` is called, `targetMap` looks like this:
 
-```json
+```js
 {
   [fooref]: Map: {
     value: Set: () => { foo = fooref.value }
@@ -317,7 +335,7 @@ const effect = (fn: Function) => {
 
 If you do a `console.log(targetMap)` at the bottom of `track` and run the test now, you get the following:
 
-```sh
+```js
 Map(1) {
   RefImpl { _value: 'foo' } => Map(1) { 'value' => Set(1) { [Function (anonymous)] } }
 }
@@ -384,4 +402,11 @@ const track = (target: object) => {
 }
 ```
 
-With this fix, our simple test case is now passing! We have reactivity. Try the complex exmaple from the start of the post - it works, too.
+With this fix, our simple test case is now passing! We have reactivity. Try the complex example from the start of the post - it works, too!
+
+## Conclusion
+
+We implemented a very basic reactivity system in a similar fashion to Vue 3. With your new found understanding, try reading through the [actual source code](https://github.com/vuejs/vue-next/tree/master/packages/reactivity). The ideas are similar - the ES6 `Proxy` object is used to handle `get` and `set` for more complex objects, like `reactive`, `Map` and `Set`. I'd like to make a follow up article implementing `reactive` using `Proxy` - if this is interesting to you, let me know.
+
+The source code repository is for this article is exclusive to my [GitHub Sponsors](https://github.com/sponsors/lmiller1990).
+

@@ -1,0 +1,313 @@
+<h2>Building Vue 3 Reactivity from Scratch</h2>
+<p>Vue 3 has a super neat reactivity system based on the ES6 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a> object. In this article we build a simplified version of the reactivity system. We will stay as close the <a href="https://github.com/vuejs/vue-next/tree/master/packages/reactivity">Vue 3 source code</a> as possible. The idea is to prepare you better to read and understand it.</p>
+<p>The source code repository is for this article is exclusive to my <a href="https://github.com/sponsors/lmiller1990">GitHub Sponsors</a>.</p>
+<p>By the end of this article, you'll be in a position to read through Vue's <code>reactivity</code> package and have a general understand of what's going on under the hood.</p>
+<p>As we work through our implementation, we will compare what we have written to the actual source code and see what's different, and why.</p>
+<p>The initial goal will be the following:</p>
+<pre class="hljs"><code>test(<span class="hljs-string">&#x27;ref&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> fooref = ref(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  <span class="hljs-keyword">let</span> foo
+  effect(<span class="hljs-function">() =&gt;</span> {
+    foo = fooref.value
+  })
+  foo <span class="hljs-comment">//=&gt; &#x27;foo&#x27;</span>
+  expect(foo).toBe(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  fooref.value = <span class="hljs-string">&#x27;bar&#x27;</span>
+  expect(foo).toBe(<span class="hljs-string">&#x27;bar&#x27;</span>) <span class="hljs-comment">// foo is now &#x27;bar&#x27; via reactivity!</span>
+})
+</code></pre>
+<p>The implementation will scale to something a (little) more interesting, too:</p>
+<pre class="hljs"><code>test(<span class="hljs-string">&#x27;multiple refs&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> fooref = ref(<span class="hljs-string">&#x27;&#x27;</span>)
+  <span class="hljs-keyword">const</span> barref = ref(<span class="hljs-string">&#x27;&#x27;</span>)
+  <span class="hljs-keyword">let</span> foo
+  <span class="hljs-keyword">let</span> foobar
+
+  effect(<span class="hljs-function">() =&gt;</span> {
+    foo = fooref.value
+    foobar = fooref.value + barref.value
+  })
+
+  expect(foo).toBe(<span class="hljs-string">&#x27;&#x27;</span>)
+  expect(foobar).toBe(<span class="hljs-string">&#x27;&#x27;</span>)
+
+  fooref.value = <span class="hljs-string">&#x27;foo&#x27;</span>
+  expect(foo).toBe(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  expect(foobar).toBe(<span class="hljs-string">&#x27;foo&#x27;</span>)
+
+  barref.value = <span class="hljs-string">&#x27;bar&#x27;</span>
+  expect(foo).toBe(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  expect(foobar).toBe(<span class="hljs-string">&#x27;foobar&#x27;</span>)
+})
+</code></pre>
+<p>If you have used Vue with the Composition API, you will be familiar with <code>ref</code>. You may not have seen <code>effect</code> - that's because it's not actually exposed to the end user. What you will be familiar with is <code>watch</code>, <code>watchEffect</code> and <code>computed</code> - the idea is more or less the same. All of these, as well as Vue's reactivity APIs, are powered by <code>effect</code> under the hood. Since we are doing everything from scratch, we will need to implement <code>effect</code> before implementing the rest.</p>
+<p>Wrapping something in <code>effect</code> sets up reactivity. Take this snippet:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> fooref = ref(<span class="hljs-string">&#x27;foo&#x27;</span>)
+<span class="hljs-keyword">let</span> foo
+effect(<span class="hljs-function">() =&gt;</span> {
+  foo = fooref.value
+})
+fooref.value = <span class="hljs-string">&#x27;bar&#x27;</span>
+<span class="hljs-built_in">console</span>.log(foo) <span class="hljs-comment">// now it&#x27;s &#x27;bar&#x27; via reactivity!</span>
+</code></pre>
+<p>By wrapping <code>foo = fooref.value</code> in <code>effect</code>, we are saying that the value of <code>foo</code> depends on the value of <code>fooref.value</code>. Now, any time that <code>fooref.value</code> changes, the <code>effect</code> will be executed and <code>foo</code> will also be updated.</p>
+<h2>Defining ref</h2>
+<p>Let's start by defining <code>ref</code> and a simple test case:</p>
+<pre class="hljs"><code><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RefImpl</span> </span>{
+  <span class="hljs-keyword">private</span> _value: <span class="hljs-built_in">string</span>
+
+  <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">val: <span class="hljs-built_in">string</span></span>)</span> {
+    <span class="hljs-built_in">this</span>._value = val
+  }
+
+  <span class="hljs-keyword">get</span> <span class="hljs-title">value</span>() {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>._value
+  }
+}
+
+<span class="hljs-keyword">const</span> ref = <span class="hljs-function">(<span class="hljs-params">val: <span class="hljs-built_in">string</span></span>) =&gt;</span> {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> RefImpl(val)
+}
+
+<span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn: <span class="hljs-built_in">Function</span></span>) =&gt;</span> {
+  <span class="hljs-comment">// TODO</span>
+}
+
+test(<span class="hljs-string">&#x27;ref&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> fooref = ref(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  <span class="hljs-keyword">let</span> foo
+  effect(<span class="hljs-function">() =&gt;</span> {
+    foo = fooref.value
+  })
+  expect(foo).toBe(<span class="hljs-string">&#x27;foo&#x27;</span>)
+})
+</code></pre>
+<p>Compare this to the <a href="https://github.com/vuejs/vue-next/blob/a238da1082762b88dff38fc732d8f7ab1a52d9c3/packages/reactivity/src/ref.ts#L54">actual source code</a>. It's pretty similar so far.</p>
+<p>This currently fails - <code>effect</code> doesn't do anything. The quickest way to get this to pass would simply be to implement <code>effect</code> like this:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn: <span class="hljs-built_in">Function</span></span>) =&gt;</span> {
+  fn()
+}
+</code></pre>
+<p>But this is not exactly reactive. It is enough to get the test to pass, though, which will help us to see the problem with this implementation.</p>
+<h2>Triggering Reactivity</h2>
+<p>Update the test to see why our naive <code>effect</code> implementation is not going to work:</p>
+<pre class="hljs"><code>test(<span class="hljs-string">&#x27;ref&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-keyword">const</span> fooref = ref(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  <span class="hljs-keyword">let</span> foo
+  effect(<span class="hljs-function">() =&gt;</span> {
+    foo = fooref.value
+  })
+  expect(foo).toBe(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  fooref.value = <span class="hljs-string">&#x27;bar&#x27;</span>
+  expect(foo).toBe(<span class="hljs-string">&#x27;bar&#x27;</span>)
+})
+</code></pre>
+<p><code>foo</code> is not going to be reactively updated. What we need is some way to tell our system to <em>re-run</em> the effect (that is, re-run <code>() =&gt; { foo = fooref.value }</code>) every time <code>fooref.value</code> changes.</p>
+<p>First, update <code>RefImpl</code> to have a <code>set value</code> method:</p>
+<pre class="hljs"><code><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RefImpl</span> </span>{
+  <span class="hljs-keyword">private</span> _value: <span class="hljs-built_in">string</span>
+
+  <span class="hljs-function"><span class="hljs-title">constructor</span>(<span class="hljs-params">val: <span class="hljs-built_in">string</span></span>)</span> {
+    <span class="hljs-built_in">this</span>._value = val
+  }
+
+  <span class="hljs-keyword">get</span> <span class="hljs-title">value</span>() {
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>._value
+  }
+
+  <span class="hljs-keyword">set</span> <span class="hljs-title">value</span>(<span class="hljs-params">val: <span class="hljs-built_in">string</span></span>) {
+    <span class="hljs-built_in">this</span>._value = val
+  }
+}
+</code></pre>
+<h2>Trigger and Track</h2>
+<p>The entire reactivity system is instrumented by two key methods: <a href="https://github.com/vuejs/vue-next/blob/a238da1082762b88dff38fc732d8f7ab1a52d9c3/packages/reactivity/src/effect.ts#L167"><code>trigger</code></a> and <a href="https://github.com/vuejs/vue-next/blob/a238da1082762b88dff38fc732d8f7ab1a52d9c3/packages/reactivity/src/effect.ts#L141"><code>track</code></a>. Whenever a value is accessed (eg, via <code>get</code>), we need to call <code>track</code> to see, or <em>track</em> who is depending on it. In this case, when we call <code>fooref.value</code> inside of <code>effect</code>, <code>get value()</code> is called. We need to track which <code>effect</code>s need to be executed.</p>
+<p>Next, when we do <code>fooref.value = 'bar'</code>, <code>set value()</code> is called. If <code>fooref.value</code> is changing, we will need to call <code>trigger</code> to execute the relevant <code>effect</code> - this will give us &quot;reactivity&quot;. See the below diagram:</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/electic/master/screenshots/ref-blog-ss-1.png" alt="trigger-track-diagram"></p>
+<p>The next step is to implement <code>track</code> and <code>trigger</code>. First, however, we will define <code>effect</code> a little better.</p>
+<h2>Track and the Target Map</h2>
+<p>We need some way to track the current effect (since there could be many, although in our example we only have declared one) and which values have effects depending on them.</p>
+<p>This might sound a bit confusing - hopefully it'll make more sense soon. For now, we need two variables. <code>targetMap</code>, which will map values to dependencies and effects, and <code>activeEffect</code>, which will track the effect that is currently getting tracked.</p>
+<pre class="hljs"><code><span class="hljs-keyword">type</span> Dep = <span class="hljs-built_in">Set</span>&lt;<span class="hljs-built_in">any</span>&gt;
+<span class="hljs-keyword">type</span> KeyToDepMap = <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">any</span>, Dep&gt;
+
+<span class="hljs-keyword">const</span> targetMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">any</span>, KeyToDepMap&gt;()
+<span class="hljs-keyword">let</span> activeEffect: <span class="hljs-built_in">any</span>
+</code></pre>
+<p><code>any</code> is not really ideal here. Once things are working and we understand the model for reactivity, the types will be improved.</p>
+<p><code>targetMap</code> is a <code>Map</code>. The nice thing about the <code>Map</code> object is, unlike a regular object, you may use objects as keys. We will be using the <code>RefImpl</code> object as a key, which will map to a <code>KeyToDepMap</code>.</p>
+<p><code>KeyToDepMap</code> is <em>another</em> <code>Map</code>. Why? We are future-proofing ourselves. At the moment <code>ref</code> can only be a <code>string</code>. Eventually, we'd like to implement objects, too, so you could do something like:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> foobar = ref({
+  <span class="hljs-attr">foo</span>: <span class="hljs-string">&#x27;foo&#x27;</span>,
+  <span class="hljs-attr">bar</span>: <span class="hljs-string">&#x27;bar&#x27;</span>
+})
+
+<span class="hljs-keyword">let</span> foo
+effect(<span class="hljs-function">() =&gt;</span> {
+  foo = foobar.value.foo
+})
+</code></pre>
+<p>On this example, <code>foo</code> depends on the value of <code>foobar.value.foo</code>. Another <code>effect</code> might set up a dependency on <code>foo.value.bar</code> - we want to track these separately. That's what <code>KeyToDepMap</code> is used for. This is lifted directly from the <a href="https://github.com/vuejs/vue-next/blob/a238da1082762b88dff38fc732d8f7ab1a52d9c3/packages/reactivity/src/effect.ts#L8">Vue 3 source code</a>.</p>
+<p>Here is the start of our implementation for <code>track</code>. It's worth noting that while this is very close to the <a href="https://github.com/vuejs/vue-next/blob/a238da1082762b88dff38fc732d8f7ab1a52d9c3/packages/reactivity/src/effect.ts#L141">actual implementation</a> in Vue 3. Note the snippet below does <code>deps.add(activeEffect)</code> which is currently undefined - this will be fixed soon. The code is followed by a diagram explaining how things work.</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> targetMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">any</span>, KeyToDepMap&gt;()
+<span class="hljs-keyword">let</span> activeEffect: <span class="hljs-built_in">any</span>
+
+<span class="hljs-keyword">const</span> track = <span class="hljs-function">(<span class="hljs-params">target: <span class="hljs-built_in">object</span></span>) =&gt;</span> {
+  <span class="hljs-keyword">let</span> depsMap = targetMap.get(target)
+  <span class="hljs-keyword">if</span> (!depsMap) {
+    depsMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()
+    targetMap.set(target, depsMap)
+  }
+
+  <span class="hljs-keyword">let</span> deps = depsMap.get(<span class="hljs-string">&#x27;value&#x27;</span>)
+  <span class="hljs-keyword">if</span> (!deps) {
+    deps = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    depsMap.set(<span class="hljs-string">&#x27;value&#x27;</span>, deps)
+  }
+
+  deps.add(activeEffect)
+}
+</code></pre>
+<p>Make sure to add <code>track</code> in <code>RefImpl</code>. Every time <code>fooref.value</code> is accessed, we call <code>track</code> to see if any is depending on it.</p>
+<pre class="hljs"><code><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RefImpl</span> </span>{
+  <span class="hljs-comment">// ...</span>
+  <span class="hljs-keyword">get</span> <span class="hljs-title">value</span>() {
+    track(<span class="hljs-built_in">this</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>._value
+  }
+}
+</code></pre>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/electic/master/screenshots/ref-blog-ss-2.png" alt="targetMap flow"></p>
+<p>Assuming that <code>activeEffect</code> is <code>() =&gt; { foo = fooref.value }</code>, we can now work through <code>track</code>:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> track = <span class="hljs-function">(<span class="hljs-params">target: <span class="hljs-built_in">object</span></span>) =&gt;</span> {
+  <span class="hljs-keyword">let</span> depsMap = targetMap.get(target)
+  <span class="hljs-comment">/**
+   * targetMap is currently empty.
+   * depsMap is undefined.
+   */</span>
+  <span class="hljs-keyword">if</span> (!depsMap) {
+    <span class="hljs-comment">/**
+     * define depsMap as a new Map
+     * add it to targetMap. The key
+     * is target, which is the fooref RefImpl
+     */</span>
+    depsMap = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Map</span>()
+    targetMap.set(target, depsMap)
+  }
+
+  <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<p>Now targetMap looks like this:</p>
+<pre class="hljs"><code>{
+  [fooref]: <span class="hljs-built_in">Map</span> <span class="hljs-comment">// empty Map</span>
+}
+</code></pre>
+<p>Next we handle the dependencies:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> track = <span class="hljs-function">(<span class="hljs-params">target: <span class="hljs-built_in">object</span></span>) =&gt;</span> {
+  <span class="hljs-comment">// ...</span>
+
+  <span class="hljs-keyword">let</span> deps = depsMap.get(<span class="hljs-string">&#x27;value&#x27;</span>)
+  <span class="hljs-comment">/**
+   * deps is also undefined.
+   * value refers to `fooref.value`.
+   * eventually we&#x27;d like to support objects
+   * with keys other than just value
+   */</span>
+
+  <span class="hljs-keyword">if</span> (!deps) {
+    <span class="hljs-comment">/**
+     * create a new Set
+     * add it to depsMap.
+     * deps will be a Set (like an array with no duplicate values)
+     * of all the effects depending on `value`
+     *
+     * when `value` changes, we invoke all the effects!
+     */</span>
+    deps = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
+    depsMap.set(<span class="hljs-string">&#x27;value&#x27;</span>, deps)
+  }
+}
+</code></pre>
+<p>Now <code>targetMap</code> is something like:</p>
+<pre class="hljs"><code>{
+  [fooref]: <span class="hljs-built_in">Map</span>: {
+    <span class="hljs-attr">value</span>: <span class="hljs-built_in">Set</span> <span class="hljs-comment">// empty set</span>
+  }
+}
+</code></pre>
+<p>Finally we add the <code>activeEffect</code> (which is <code>() =&gt; { foo = fooref.value }</code>) to the <code>deps</code> <code>Set</code>:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> track = <span class="hljs-function">(<span class="hljs-params">target: <span class="hljs-built_in">object</span></span>) =&gt;</span> {
+  <span class="hljs-comment">// ...</span>
+  deps.add(activeEffect)
+}
+</code></pre>
+<p>After <code>track</code> is called, <code>targetMap</code> looks like this:</p>
+<pre class="hljs"><code>{
+  [fooref]: <span class="hljs-built_in">Map</span>: {
+    <span class="hljs-attr">value</span>: <span class="hljs-built_in">Set</span>: <span class="hljs-function">() =&gt;</span> { foo = fooref.value }
+  }
+}
+</code></pre>
+<p>The last issue we need to address is making sure <code>activeEffect</code> is defined. We can just set it before invoking the effect, then unset it afterwards. Update <code>effect</code>:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> effect = <span class="hljs-function">(<span class="hljs-params">fn: <span class="hljs-built_in">Function</span></span>) =&gt;</span> {
+  activeEffect = fn
+  fn()
+  activeEffect = <span class="hljs-literal">undefined</span>
+}
+</code></pre>
+<p>If you do a <code>console.log(targetMap)</code> at the bottom of <code>track</code> and run the test now, you get the following:</p>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-title">Map</span>(<span class="hljs-params"><span class="hljs-number">1</span></span>)</span> {
+  RefImpl { <span class="hljs-attr">_value</span>: <span class="hljs-string">&#x27;foo&#x27;</span> } =&gt; <span class="hljs-function"><span class="hljs-title">Map</span>(<span class="hljs-params"><span class="hljs-number">1</span></span>)</span> { <span class="hljs-string">&#x27;value&#x27;</span> =&gt; <span class="hljs-function"><span class="hljs-title">Set</span>(<span class="hljs-params"><span class="hljs-number">1</span></span>)</span> { [<span class="hljs-built_in">Function</span> (anonymous)] } }
+}
+</code></pre>
+<h2>Trigger</h2>
+<p>Now we are tracking dependencies when <code>get value()</code> is called, we need the other part of the reactivity system - <code>trigger</code> when <code>set value()</code> is called.</p>
+<p>All we need to do is grab the correct <code>depsMap</code> from <code>targetMap</code>, iterate over each <code>dep</code> and invoke the associated effect! Note the <code>console.log</code> which will help us highlight a problem:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> trigger = <span class="hljs-function">(<span class="hljs-params">target: <span class="hljs-built_in">object</span></span>) =&gt;</span> {
+  <span class="hljs-keyword">let</span> depsMap = targetMap.get(target)
+  <span class="hljs-keyword">if</span> (!depsMap) {
+    <span class="hljs-keyword">return</span>
+  }
+
+  depsMap.forEach(<span class="hljs-function"><span class="hljs-params">dep</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(dep)
+    dep.forEach(<span class="hljs-function"><span class="hljs-params">eff</span> =&gt;</span> {
+      eff()
+    })
+  })
+}
+</code></pre>
+<p>Make sure to call <code>trigger</code> in <code>set value()</code>:</p>
+<pre class="hljs"><code><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RefImpl</span> </span>{
+  <span class="hljs-comment">// ...</span>
+  <span class="hljs-keyword">set</span> <span class="hljs-title">value</span>(<span class="hljs-params">val: <span class="hljs-built_in">string</span></span>) {
+    <span class="hljs-built_in">this</span>._value = val
+    trigger(<span class="hljs-built_in">this</span>)
+  }
+}
+</code></pre>
+<p>We get the following log:</p>
+<pre class="hljs"><code>Map(1) {
+  RefImpl { _value: <span class="hljs-string">&#x27;bar&#x27;</span> } =&gt; Map(1) {
+    <span class="hljs-string">&#x27;value&#x27;</span> =&gt; Set(2) { [Function (anonymous)], undefined }
+  }
+}
+</code></pre>
+<p>Note the set contains two values... one anonymous function and one <code>undefined</code>. The function is the effect. This is correct. <code>undefined</code> should not be there, though. This is, somewhat confusingly, because when we invoke <code>eff()</code>, we do <code>() =&gt; { foo = fooref.value }</code> which calls <code>get value()</code>. This in turns calls <code>track</code> and adds <code>activeEffect</code> to <code>deps</code> (which is <code>undefined</code> at this point)`.</p>
+<p>The fix is to simply return early in <code>track</code> if <code>activeEffect</code> is <code>undefined</code>. No <code>undefined</code> effects allowed:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> track = <span class="hljs-function">(<span class="hljs-params">target: <span class="hljs-built_in">object</span></span>) =&gt;</span> {
+  <span class="hljs-comment">/**
+   * return early if activeEffect is undefined.
+   */</span>
+  <span class="hljs-keyword">if</span> (!activeEffect) {
+    <span class="hljs-keyword">return</span>
+  }
+
+  <span class="hljs-comment">// ... implementation ...</span>
+}
+</code></pre>
+<p>With this fix, our simple test case is now passing! We have reactivity. Try the complex example from the start of the post - it works, too!</p>
+<h2>Conclusion</h2>
+<p>We implemented a very basic reactivity system in a similar fashion to Vue 3. With your new found understanding, try reading through the <a href="https://github.com/vuejs/vue-next/tree/master/packages/reactivity">actual source code</a>. The ideas are similar - the ES6 <code>Proxy</code> object is used to handle <code>get</code> and <code>set</code> for more complex objects, like <code>reactive</code>, <code>Map</code> and <code>Set</code>. I'd like to make a follow up article implementing <code>reactive</code> using <code>Proxy</code> - if this is interesting to you, let me know.</p>
+<p>The source code repository is for this article is exclusive to my <a href="https://github.com/sponsors/lmiller1990">GitHub Sponsors</a>.</p>

@@ -3,6 +3,13 @@ exports.__esModule = true;
 exports.articles = void 0;
 exports.articles = [
     {
+        title: "Vue 3 Reactivity from Scratch",
+        slug: " ",
+        published: "2021-02-16",
+        description: "Build a Vue 3 inspired rectivity system.",
+        image: "https://images.unsplash.com/photo-1560094824-13b9bc472f86?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MTN8fGJvdW5jZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60"
+    },
+    {
         title: "Decoding Variable Length Quantity (VLQ) for Source Maps",
         slug: "decoding-variable-length-quantity-vlq-for-source-maps",
         published: "2021-01-19",
