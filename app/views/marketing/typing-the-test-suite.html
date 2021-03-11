@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html class="h-full">
+
+<head>
+  <title>
+    Typing the Test Suite |
+    A brisk course on writing tests with Jest and TypeScript.
+  </title>
+    
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script>
+    window.isLowerPower = false;
+    const GEO_API_URL = 'https://www.cloudflare.com/cdn-cgi/trace'
+    const PPP_API_URL =
+      'https://api.purchasing-power-parity.com/?target=';
+
+    const mapGeo = response => ({
+      countryCodeIsoAlpha2: response.country_code,
+      countryName: response.country_name,
+    })
+
+    const fetchGeo = () => window.fetch(GEO_API_URL)
+      .then(res => res.text())
+      .then(data => {
+        const [_, loc] = data.match(/loc=(.*)/)
+
+        window.fetch(`${PPP_API_URL}${loc}`)
+          .then(res => res.json())
+          .then(res => {
+            const CODES = {
+              '0.1': { code: 'SHARE_VUE_LOVE', off: 90 },
+              '0.2': { code: 'SHARE_LOVE_VUE', off: 80 },
+              '0.3': { code: 'VUEJS_AWESOME_70_OFF', off: 70 },
+              '0.4': { code: 'SHARE_LOVE_VUEJS', off: 60 },
+              '0.5': { code: 'LOVE_SHARE_VUEJS', off: 50 },
+              '0.6': { code: 'SHARE_THE_LOVE_VUE', off: 40 },
+              '0.7': { code: 'LOVE_SHARE_VUE', off: 30 },
+              '0.8': { code: 'VUE_SHARE_THE_LOVE', off: 20 },
+              '0.9': { code: 'VUE_LOVE_SHARE', off: 10 }
+            }
+
+            if (res.ppp.pppConversionFactor <= 0.8) {
+              window.isLowerPower = true
+              const round = Math.round((res.ppp.pppConversionFactor) * 10) / 10
+              const discount = CODES[res.ppp.pppConversionFactor.toFixed(1)]
+
+              const msg = `
+                  <div class="m-8 bg-blue-500 text-white p-4 rounded-md text-2xl">
+                    <p class="py-2">
+                      Hi! It looks like you are in a country where this book might be
+                      a bit expensive.
+                    </p> 
+                    <p class="py-2">
+                      I support <b>purchasing power parity</b> - I want
+                      to maximize my impact by making this book affordable to 
+                      everyone all around the world.
+                    </p>
+                    <p class="py-2">
+                      Use the discount code <b>${discount.code}</b> to get
+                      <b>${discount.off}%</b> off at the checkout. 👊🏼
+                    </p> 
+                  </div>
+                `
+
+              const $banners = Array.from(document.querySelectorAll('.purchasing-parity'))
+              for (const $banner of $banners) {
+                $banner.innerHTML = msg;
+              }
+            }
+          })
+      })
+
+    fetchGeo()
+
+  </script>
+</head>
+
+<body class="h-full">
+  <div class="flex justify-center h-1/2 bg-pink-800	text-white">
+    <div class="flex flex-col items-center justify-center">
+      <p class="text-4xl md:text-6xl">
+        Typing the Test Suite
+      </p>
+      <p class="text-2xl md:text-3xl text-center">
+        A brisk course on writing tests with Jest and TypeScript.
+      </p>
+    </div>
+  </div>
+
+  <div class="flex justify-center">
+    <div class="max-w-2xl m-8">
+      <div class="purchasing-parity">
+        <!-- purchasing parity goes here -->
+      </div>
+
+      <p class="font-semibold underline text-2xl m-8">
+        What is this?
+      </p>
+
+      <p class="text-2xl m-8">
+        A quick course for intermediate level developers looking to get started with testing using Jest and TypeScript.
+      </p>
+
+      <p class="text-2xl m-8">
+        The first section focuses on using Jest with JavaScript and a bit of TDD.
+        The rest of the course uses TypeScript, Jest, with either Node.js or React.
+
+        It's 2 hours long and full of content.
+      </p>
+      <p class="text-2xl m-8">
+        We move fast, break things, then write tests to make sure they don't break again. The technologies used are:
+      </p>
+      <ul class="text-2xl m-8 list-inside list-disc">
+        <li>
+          <a class="underline" href="https://jestjs.io/">Jest (v26)</a>
+        </li>
+        <li>
+          <a class="underline" href="https://www.typescriptlang.org/">TypeScript (v4)</a>
+        </li>
+        <li>
+          <a class="underline" href="https://reactjs.org/">React.js (v17)</a>
+        </li>
+        <li>
+          <a class="underline" href="https://testing-library.com/docs/react-testing-library/intro/">
+            React Testing Library (v11)
+          </a>
+        </li>
+      </ul>
+
+      <div class="hidden md:flex flex m-16 h-32 justify-center">
+        <img class="m-2" src="https://jestjs.io/img/jest-card-run.svg">
+        <img class="m-2"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/1200px-Typescript_logo_2020.svg.png">
+        <img class="m-0" src="https://cdn.auth0.com/blog/react-js/react.png">
+        <img class="m-2" src="https://testing-library.com/img/octopus-128x128.png">
+      </div>
+
+      <p class="font-semibold underline text-2xl m-8">
+        Who is this for?
+      </p>
+
+      <ul class="text-2xl m-8 list-inside list-disc">
+        <li class="py-1">
+          Developers with some JavaScript/TypeScript, Node.js and React experience who'd like to learn to write tests.
+        </li>
+        <li class="py-1">
+          Highly motivated beginner who likes to jump in the deep end.
+        </li>
+      </ul>
+
+      <p class="font-semibold underline text-2xl m-8">
+        How do I get it?
+      </p>
+
+      <p class="text-2xl m-8">
+        Two ways. You can buy it on <a class="underline" href="#">Udemy</a>, or you can buy it from me directly via <a
+          class="underline" href="#">Gumroad</a>.
+      </p>
+
+      <p class="text-2xl m-8">
+        <a class="underline" href="#">Gumroad</a> will let you download all the content in one shot, in glorious 1080p.
+      </p>
+
+      <p class="font-semibold underline text-2xl m-8">
+        How much does it cost?
+      </p>
+
+      <p class="text-2xl m-8">
+        It costs $15. I support <b>purchasing power parity</b> to make my content affordable to everyone. If this price
+        is unaffordable for you, <a class="underline" href="mailto:lachlan@vuejs-course.com">send me an email</a> and we
+        will make it work.
+      </p>
+
+      <p class="font-semibold underline text-2xl m-8">
+        Is there a preview?
+      </p>
+
+      <p class="text-2xl m-8">
+        You can <a class="underline" href="#">preview the content here</a> or get the <a class="underline"
+          href="#">source code here</a>.
+      </p>
+
+      <p class="font-semibold underline text-2xl m-8">
+        I have more questions!
+      </p>
+
+      <p class="text-2xl m-8">
+        <a class="underline" href="mailto:lachlan@vuejs-course.com">Send me an email</a>.
+      </p>
+
+      <div class="purchasing-parity">
+        <!-- purchasing parity goes here -->
+      </div>
+    </div>
+
+  </div>
+
+  <div class="flex justify-center mt-8 mb-16">
+    <div class="grid grid-cols-3 gap-4 max-w-6xl text-xl">
+
+      <div class="m-4">
+        <p class="text-center">
+          <b>1.0 Introduction</b>
+        </p>
+
+        <p class="py-4">
+          Get everything setup and starting writing some tests with Jest.
+        </p>
+
+        <ul>
+          <li>1.1 Installation</li>
+          <li>1.2 Your First Test</li>
+          <li>1.3 Adding an Assertion</li>
+          <li>1.4 Describing and Grouping Tests</li>
+          <li>1.5 Feedback Loop with Watch Mode</li>
+          <li>1.6 It.each for Concise Tests</li>
+        </ul>
+      </div>
+
+      <div class="m-4">
+        <p class="text-center">
+          <b>2.0 Project: String Calculator</b>
+        </p>
+
+        <p class="py-4">
+          Put the skills learned in section one into practice by completing the String Calculator Kata.
+        </p>
+
+        <ul>
+          <li>2.1 The First Test</li>
+          <li>2.2 Handling Whitespace</li>
+          <li>2.3 Throwing an Error</li>
+          <li>2.4 Testing the Error</li>
+          <li>2.5 Validating the Test Suite with a Functional Refactor</li>
+          <li>2.6 Completing the Functional Refactor</li>
+        </ul>
+      </div>
+
+      <div class="m-4">
+        <p class="text-center">
+          <b>3.0 Matcher Madness</b>
+        </p>
+
+        <p class="py-4">
+          Do a deep dive into the various matchers Jest provides, from toBe and toEqual to the more exotic resolves and
+          rejects matchers.
+        </p>
+        <ul>
+          <li>3.1 toBe</li>
+          <li>3.2 toEqual, not</li>
+          <li>3.3 toHaveProperty</li>
+          <li>3.4 Resolves matcher for Promises</li>
+          <li>3.5 Rejects matcher for Errors</li>
+          <li>3.6 toHaveBeenCalled and Mock Functions</li>
+          <li>3.7 Waiting with the Done Callback</li>
+        </ul>
+      </div>
+
+      <div class="m-4">
+        <p class="text-center">
+          <b>
+            4.0 TypeScript, Node.js and Jest
+          </b>
+        </p>
+
+        <p class="py-4">
+          We introduce TypeScript and Jest by developing and testing a Node.js API. <em>Note: This section assumes basic knowledge
+          of Node.js and Express</em>.
+        </p>
+
+        <ul>
+          <li>4.1 TypeScript and Jest with ts-jest</li>
+          <li>4.2 Express Setup</li>
+          <li>4.3 The Jest Lifecylce: Before and After Hooks</li>
+          <li>4.4 Better Types</li>
+          <li>4.5 Adding JWT and a Refactor</li>
+          <li>4.6 Authorization Header</li>
+          <li>4.7 Testing for Success</li>
+          <li>4.8 Testing for Failure</li>
+          <li>4.9 Alternative Failed Assertion Syntax</li>
+          <li>4.10 Summary</li>
+        </ul>
+      </div>
+
+
+      <div class="m-4">
+        <p class="text-center">
+          <b>
+            5.0 TypeScript, React and Testing in a DOM Environment
+          </b>
+        </p>
+
+        <p class="py-4">
+          Build a toy React app and see how to use TypeScript and Jest for DOM based testing with Testing Library. <em>Note:
+          this section assumes basisc knowledge of React</em>.
+        </p>
+
+        <ul>
+          <li>5.1 Create React App and TypeScript</li>
+          <li>5.2 Rendering with Testing Library</li>
+          <li>5.3 Testing Library Assertions - getByText</li>
+          <li>5.4 useState and Asynchronous Assertions</li>
+          <li>5.5 Fetchign Data with useEffect</li>
+          <li>5.6 More Async Behavior with findAll</li>
+          <li>5.7 Mocking Axios with Jest Mocks</li>
+          <li>5.8 Toggling Todos</li>
+        </ul>
+      </div>
+
+      <div class="m-4">
+        <p class="text-center">
+          <b>
+            6.0 Jest Tips and Tricks
+          </b>
+        </p>
+
+        <p class="py-4">
+          Learn some of Jest's more advanced features. Write your own custom matchers with
+          TypeScript and write more robust, reuseable and (mostly) type-safe mocks.
+        </p>
+
+        <ul>
+          <li>6.1 Section Overview</li>
+          <li>6.2 Custom Matcher API</li>
+          <li>6.3 Implementing the Matcher</li>
+          <li>6.4 Typing the Matcher</li>
+          <li>6.5 Setting up for Module Mocking</li>
+          <li>6.6 Inline Mocks Review</li>
+          <li>6.7 The Problem with Inline Mocks</li>
+          <li>6.8 Manual Mocks</li>
+          <li>6.9 Default Module Data</li>
+          <li>6.10 Typing the Mock Module</li>
+          <li>6.11 Improving the Spec Types</li>
+          <li>6.12 Jest Spies</li>
+          <li>6.13 What Next? More Learning Resources</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="flex justify-center bg-pink-800	text-white">
+    <div class="m-8 flex flex-col items-center justify-center max-w-2xl">
+      <p class="text-3xl mb-4">
+        About the author
+      </p>
+      <img class="rounded-full h-32 m-2" src="https://avatars3.githubusercontent.com/u/19196536?s=460&v=4">
+
+      <p class="text-xl w-full m-2">
+        Hi there! I'm Lachlan, <a class="underline" href="https://github.com/vuejs">Vue.js team member</a> and quality
+        software enthusiast.
+      </p>
+
+      <p class="text-xl w-full m-2">
+        I have taught tens of thousands of developers how to write testable JavaScript applications
+        through my <a class="underline" href="https://www.udemy.com/user/lachlan-miller-4/">courses</a>,
+        <a class="underline" href="/books">books</a> and
+        <a class="underline" href="https://www.youtube.com/channel/UCydNBt-h2Cox_Ub_GzspneQ?view_as=subscriber">YouTube
+          channel</a>. I
+        hope you will be next!
+      </p>
+
+      <p class="text-xl w-full m-2">
+        Find me on <a class="underline" href="https://github.com/lmiller1990">GitHub</a> and
+        <a class="underline" href="https://twitter.com/Lachlan19900">Twitter</a> or by just sending me a
+        good old fashioned <a class="underline" href="mailto:lachlan@vuejs-course.com">email</a>.
+      </p>
+
+    </div>
+</body>
+
+</html>

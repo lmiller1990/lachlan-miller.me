@@ -46,11 +46,17 @@ router.use('/screencasts/spreadsheet-engine-from-scratch', (req: Request, res: R
   res.render('screencasts/spreadsheet-engine-from-scratch')
 })
 
+router.use('/typing-the-test-suite', (req: Request, res: Response) => {
+  const landingPage = fs.readFileSync('./app/views/marketing/typing-the-test-suite.html')
+  res.render('marketing/typing-the-test-suite', {
+    landingPage,
+  })
+})
+
 router.use('/design-patterns-for-vuejs', (req: Request, res: Response) => {
   const landingPage = fs.readFileSync('./app/views/marketing/design-patterns-for-vuejs.html')
   res.render('marketing/design-patterns-for-vuejs', {
     landingPage,
-    STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY
   })
 })
 
