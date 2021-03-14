@@ -48,11 +48,16 @@ router.use('/musings', function (req, res) {
 router.use('/screencasts/spreadsheet-engine-from-scratch', function (req, res) {
     res.render('screencasts/spreadsheet-engine-from-scratch');
 });
+router.use('/typing-the-test-suite', function (req, res) {
+    var landingPage = fs.readFileSync('./app/views/marketing/typing-the-test-suite.html');
+    res.render('marketing/typing-the-test-suite', {
+        landingPage: landingPage
+    });
+});
 router.use('/design-patterns-for-vuejs', function (req, res) {
     var landingPage = fs.readFileSync('./app/views/marketing/design-patterns-for-vuejs.html');
     res.render('marketing/design-patterns-for-vuejs', {
-        landingPage: landingPage,
-        STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY
+        landingPage: landingPage
     });
 });
 router.use('/screencasts', function (req, res) {
