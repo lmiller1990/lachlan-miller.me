@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "Component Testing with Cypress and Vue",
+    slug: "component-testing-cypress-vue",
+    published: "2021-03-29",
+    description: "Meet Cypress Component Testing, a better way to test your Vue components.",
+    image: "https://images.unsplash.com/photo-1518349619113-03114f06ac3a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+  },
+  {
     title: "Vue 3 Reactivity from Scratch",
     slug: "vue-3-reactivity-from-scratch",
     published: "2021-02-16",
