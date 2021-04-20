@@ -1,0 +1,60 @@
+<h2>Testing React with Cypress and Vite</h2>
+<p>As announced recently on the <a href="https://www.cypress.io/blog/2021/04/06/introducing-the-cypress-component-test-runner/">Cypress blog</a>, Cypress 7.0 comes with a dedicated component testing runner. Most users will opt for the battle tested <a href="https://www.cypress.io/blog/2021/04/06/cypress-component-testing-react/">webpack dev server</a>. Some users like to be on the bleeding edge, though, and for that we also have an experimental ES modules dev server powered <a href="https://vitejs.dev/">Vite</a>.</p>
+<p>This article will show you how to set up Cypress and Vite. You can find the <a href="https://github.com/lmiller1990/cypress-react-vite-demo">source code here</a>.</p>
+<h2>Creating a React Project</h2>
+<p>The easiest way to get started is by scaffolding a new project using Create React App. Let's do so, and include TypeScript for good measure:</p>
+<pre class="hljs"><code>yarn create react-app react-cypress-vite --template typescript
+</code></pre>
+<p>That's all it takes to create the initial React project.</p>
+<h2>Install Cypress</h2>
+<p>Next we need a few dependencies. Those are Cypress, it's React adapter, and the Vite Dev Server:</p>
+<pre class="hljs"><code>yarn add cypress @cypress/react @cypress/vite-dev-server vite --dev
+</code></pre>
+<p>Now we have a project and the correct dependencies, we need to do a tiny bit of configuration.</p>
+<h2>Configuring Cypress and Vite</h2>
+<p>Next we need a little bit of configuration. Since the Cypress component testing runner is dev server agnostic, we need to tell it to use Vite. Create <code>cypress/plugins/index.js</code> and add the following:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> { startDevServer } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@cypress/vite-dev-server&#x27;</span>)
+
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-function">(<span class="hljs-params">on, config</span>) =&gt;</span> {
+  on(<span class="hljs-string">&#x27;dev-server:start&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">options</span>) =&gt;</span> startDevServer({ options }))
+
+  <span class="hljs-keyword">return</span> config
+}
+</code></pre>
+<p>Finally, we need to tell Cypress where to find our tests and components. I'm going to go with the default that Create React App ships with: components and tests in <code>src</code>, test files ending with <code>.test.tsx</code> or <code>.spec.tsx</code>.</p>
+<pre class="hljs"><code>{
+  <span class="hljs-attr">&quot;testFiles&quot;</span>: <span class="hljs-string">&quot;**/*{test,spec}.{ts,tsx}&quot;</span>,
+  <span class="hljs-attr">&quot;componentFolder&quot;</span>: <span class="hljs-string">&quot;src&quot;</span>
+}
+</code></pre>
+<h2>Writing a Test with Cypress</h2>
+<p>Finally, let's update the default test. Create React App ships with <a href="https://testing-library.com/">Testing Library</a>. While it is possible to use Testing Library selector and assertion syntax with Cypress, I'm going to use the default Cypress driver, which has a slightly more ergonomic API - no need to explicitly <code>await</code> DOM updates, for example.</p>
+<p>The default test written using Cypress looks like this:</p>
+<pre class="hljs"><code>import React from 'react';
+import { mount } from '@cypress/react';
+import App from './App';
+
+it('renders learn react link', () =&gt; {
+  mount(&lt;App /&gt;);
+  cy.get('a').contains('Learn React');
+});
+</code></pre>
+<p>You can run the test in two ways.</p>
+<h2>Interactive Mode</h2>
+<p>The main way you interact with Cypress is via interactive mode. This let's you see the component and how it behaves as you update the component and tests. Run Cypress interactively with <code>yarn cypress open-ct</code>. It looks like this:</p>
+<p><img src="https://raw.githubusercontent.com/lmiller1990/cypress-react-vite-demo/main/cypress-vite-1.png" alt=""></p>
+<p>Try changing the component or test - it's re-executed almost immediately. Vite is fast!</p>
+<h2>Run Mode</h2>
+<p>Sometimes you just want to run all the tests without seeing them rendering. This is especially useful in a CI environment. You can do this using <code>yarn cypress run-ct</code>, which runs the tests in a headless browser by default, printing the results to the terminal:</p>
+<pre class="hljs"><code>=======================================================================
+
+  (Run Finished)
+
+
+       Spec                 Tests  Passing  Failing  Pending  Skipped
+  ┌───────────────────────────────────────────────────────────────────┐
+  │ ✔  App.test.tsx  114ms   1      1        -        -        -      │
+  └───────────────────────────────────────────────────────────────────┘
+    ✔  All passed!   114ms   1      1        -        -        -
+</code></pre>
+<p>You can find the <a href="https://github.com/lmiller1990/cypress-react-vite-demo">source code here</a>.</p>

@@ -3,6 +3,13 @@ exports.__esModule = true;
 exports.articles = void 0;
 exports.articles = [
     {
+        title: "Starting Component Testing with React, Cypress and Vite",
+        slug: "getting-started-cypress-react-vite",
+        published: "2021-04-20",
+        description: "There is no faster feedback loop for React component testing than Cypress and Vite.",
+        image: "https://images.unsplash.com/photo-1585074245728-eedb0cc44a66?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1404&q=80"
+    },
+    {
         title: "Component Testing with Cypress and Vue",
         slug: "component-testing-cypress-vue",
         published: "2021-03-29",
