@@ -3,6 +3,13 @@ exports.__esModule = true;
 exports.articles = void 0;
 exports.articles = [
     {
+        title: "Advanced TypeScript: A Type Safe Store for Vue 3",
+        slug: "advanced-type-a-type-safe-store-for-vue-3",
+        published: "2021-04-30",
+        description: "Learn some advanced TypeScript and create a store for Vue 3.",
+        image: "https://images.unsplash.com/photo-1488272690691-2636704d6000?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=2547&q=80"
+    },
+    {
         title: "Starting Component Testing with React, Cypress and Vite",
         slug: "getting-started-cypress-react-vite",
         published: "2021-04-20",
