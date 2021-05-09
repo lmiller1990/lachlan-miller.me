@@ -7,7 +7,7 @@ var articles_1 = require("./models/articles");
 var musings_1 = require("./models/musings");
 var router = express_1.Router();
 exports.router = router;
-router.use('/articles/:slug', function (req, res) {
+router.get('/articles/:slug', function (req, res) {
     try {
         var content = fs.readFileSync("./app/public/articles/" + req.params.slug + ".html");
         var article = articles_1.articles.find(function (x) { return x.slug === req.params.slug; });
@@ -17,22 +17,22 @@ router.use('/articles/:slug', function (req, res) {
         res.render('misc/404');
     }
 });
-router.use('/articles', function (req, res) {
+router.get('/articles', function (req, res) {
     res.render('articles/index', { articles: articles_1.articles });
 });
-router.use('/projects', function (req, res) {
+router.get('/projects', function (req, res) {
     res.render('projects/index');
 });
-router.use('/books', function (req, res) {
+router.get('/books', function (req, res) {
     res.render('books/index');
 });
-router.use('/contact', function (req, res) {
+router.get('/contact', function (req, res) {
     res.render('contact/index');
 });
-router.use('/vue-toronto-2020', function (req, res) {
+router.get('/vue-toronto-2020', function (req, res) {
     res.render('misc/vue-toronto-2020');
 });
-router.use('/musings/:slug', function (req, res) {
+router.get('/musings/:slug', function (req, res) {
     try {
         var content = fs.readFileSync("./app/public/musings/" + req.params.slug + ".html");
         var musing = musings_1.musings.find(function (x) { return x.slug === req.params.slug; });
@@ -42,30 +42,30 @@ router.use('/musings/:slug', function (req, res) {
         res.render('misc/404');
     }
 });
-router.use('/musings', function (req, res) {
+router.get('/musings', function (req, res) {
     res.render('musings/index', { musings: musings_1.musings });
 });
-router.use('/screencasts/spreadsheet-engine-from-scratch', function (req, res) {
+router.get('/screencasts/spreadsheet-engine-from-scratch', function (req, res) {
     res.render('screencasts/spreadsheet-engine-from-scratch');
 });
-router.use('/typing-the-test-suite', function (req, res) {
+router.get('/typing-the-test-suite', function (req, res) {
     var landingPage = fs.readFileSync('./app/views/marketing/typing-the-test-suite.html');
     res.render('marketing/typing-the-test-suite', {
         landingPage: landingPage
     });
 });
-router.use('/design-patterns-for-vuejs', function (req, res) {
+router.get('/design-patterns-for-vuejs', function (req, res) {
     var landingPage = fs.readFileSync('./app/views/marketing/design-patterns-for-vuejs.html');
     res.render('marketing/design-patterns-for-vuejs', {
         landingPage: landingPage
     });
 });
-router.use('/screencasts', function (req, res) {
+router.get('/screencasts', function (req, res) {
     res.render('screencasts/index');
 });
-router.use('/', function (req, res) {
+router.get('/', function (req, res) {
     res.render('home/index');
 });
-router.use('*', function (req, res) {
+router.get('*', function (req, res) {
     res.render('misc/404');
 });
