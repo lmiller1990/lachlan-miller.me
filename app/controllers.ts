@@ -67,6 +67,13 @@ router.get('/design-patterns-for-vuejs', (req: Request, res: Response) => {
   })
 })
 
+router.get('/design-patterns-for-vuejs-ja', (req: Request, res: Response) => {
+  const landingPage = fs.readFileSync('./app/views/marketing/design-patterns-for-vuejs-ja.html')
+  res.render('marketing/design-patterns-for-vuejs', {
+    landingPage,
+  })
+})
+
 router.get('/screencasts', (req: Request, res: Response) => {
   res.render('screencasts/index')
 })

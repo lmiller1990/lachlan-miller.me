@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Vue.jsのデザインパターン</title>
+  <meta name="viewport" content="width=device-width initial-scale=1">
+
+  <meta property="twitter:card" content="summary">
+  <meta property="twitter:title" content="Design Patterns for Vue.js">
+  <meta property="twitter:description" content="メンテナンス性に優れたアプリケーションのためのテスト駆動アプローチ">
+  <meta property="twitter:site" content="@Lachlan19900">
+  <meta property="twitter:image" content="https://raw.githubusercontent.com/lmiller1990/design-patterns-for-vuejs-source-code/master/icon.png">
+  <meta property="og:title" content="Design Patterns for Vue.js">
+  <meta property="og:description" content="メンテナンス性に優れたアプリケーションのためのテスト駆動アプローチ">
+  <meta property="og:image" content="https://raw.githubusercontent.com/lmiller1990/design-patterns-for-vuejs-source-code/master/icon.png">
+  <meta name='description' content="メンテナンス性に優れたアプリケーションのためのテスト駆動アプローチ">
+</head>
+
+<body>
+
+  <main>
+
+    <script>
+      function postEmail(payload) {
+        return window.fetch('https://vuejs-course.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const $forms = document.querySelectorAll('.email-form')
+        for (const $form of Array.from($forms)) {
+          $form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const $email = $form.querySelector('.email-form__email')
+            const $button = $form.querySelector('.email-form__button')
+            $button.setAttribute('disabled', 'disabled')
+            $button.textContent = 'Submitting...'
+            await postEmail({ email: $email.value, referrer: 'lachlan-miller.me/design-patterns' })
+            $button.removeAttribute('disabled')
+            $button.textContent = 'Thanks!'
+            const $preview = document.querySelector('.preview__download').classList.remove('d-none')
+          })
+        }
+      })
+
+      window.isLowerPower = false;
+      const GEO_API_URL = 'https://www.cloudflare.com/cdn-cgi/trace'
+      const PPP_API_URL =
+        'https://api.purchasing-power-parity.com/?target=';
+
+      const mapGeo = response => ({
+        countryCodeIsoAlpha2: response.country_code,
+        countryName: response.country_name,
+      })
+
+      const fetchGeo = () => window.fetch(GEO_API_URL)
+        .then(res => res.text())
+        .then(data => {
+          const [_, loc] = data.match(/loc=(.*)/)
+
+          window.fetch(`${PPP_API_URL}${loc}`)
+            .then(res => res.json())
+            .then(res => {
+              const CODES = {                   
+                '0.1': { code: 'SHARE_VUE_LOVE', off: 90 },
+                '0.2': { code: 'SHARE_LOVE_VUE', off: 80 },
+                '0.3': { code: 'VUEJS_AWESOME_70_OFF', off: 70 },
+                '0.4': { code: 'SHARE_LOVE_VUEJS', off: 60 },
+                '0.5': { code: 'LOVE_SHARE_VUEJS', off: 50 },
+                '0.6': { code: 'SHARE_THE_LOVE_VUE', off: 40 },
+                '0.7': { code: 'LOVE_SHARE_VUE', off: 30 },
+                '0.8': { code: 'VUE_SHARE_THE_LOVE', off: 20 },
+                '0.9': { code: 'VUE_LOVE_SHARE', off: 10 }
+              }
+
+              if (res.ppp.pppConversionFactor <= 0.8) {
+                window.isLowerPower = true
+                const round = Math.round((res.ppp.pppConversionFactor) * 10) / 10
+                const discount = CODES[res.ppp.pppConversionFactor.toFixed(1)]
+
+                const msg = `
+                  <div class="purchasing-parity-card">
+                    <p>
+                      Hi! It looks like you are in a country where this book might be
+                      a bit expensive.
+                    </p> 
+                    <p>
+                      I support <b>parity purchasing power</b> - I want
+                      to maximize my impact by making this book affordable to 
+                      everyone all around the world.
+                    </p>
+                    <p>
+                      Use the discount code <b>${discount.code}</b> to get
+                      <b>${discount.off}%</b> off at the checkout. 👊🏼
+                    </p> 
+                  </div>
+                  <br />
+                `
+
+                const $banners = Array.from(document.querySelectorAll('.purchasing-parity'))
+                for (const $banner of $banners) {
+                  $banner.innerHTML = msg;
+                }
+              }
+            })
+        })
+
+      fetchGeo()
+
+    </script>
+    <section>
+      <div class="section__content">
+        <h1 class="text-center">Vue.jsのデザインパターン</h1>
+        <h3 class="text-center">メンテナンス性に優れたアプリケーションのためのテスト駆動アプローチ</h3>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="section__content">
+        
+        <div class="purchasing-parity">            
+        </div>
+
+        <div class="call-to-action">
+          <div class="call-to-action__text">
+            "テストしやすいフォーム"と"レンダーレスコンポーネント"の章を無料でプレビューする！
+          </div>
+
+          <form class="email-form">
+            <!-- <input name="email" placeholder="Your email address" class="email-form__email" /> -->
+            <a target="_blank" href="https://app.box.com/s/5lwoe8m6fjt17p6gukp93v5u8qkc8m9b" type="submit" class="email-form__button">プレビューを手に入れる</a>
+          </form>
+
+          <div class="call-to-action__text">
+            または、確かめる必要がなければ今すぐ。 <a href="#pricing">購入できます</a>。
+          </div>
+        </div>
+
+        <div class="preview__download d-none">
+          <a target="_blank" href="https://app.box.com/s/ymmknytu2qev0l0jdgsqh9hgr50zuikz">
+            プレビュー
+            </a>.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section__content">
+
+        <p>
+          Vue.jsは素晴らしいフレームワークです－より優れたアプリケーションを、今まで以上に早く作ることができます。Composition APIとTypeScriptを使えば、何でもできると感じられるでしょう・・
+        </p>
+
+        <p>
+          ・・しかし時が流れるにつれ、スピードは低下していきます。ビジネスの要求は変化します。ビジネスロジックとUIコンポーネントの間の境界線は曖昧になり始めます。
+        </p>
+
+        <p>
+          <b>Vue.jsのデザインパターン</b>では、複雑で拡張性がありテストしやすいアプリケーションを作るための、ツール・デザインパターン・コンセプトを学ぶことができます。
+        </p>
+
+        <p>
+          本書では以下のテーマをカバーしています:
+        </p>
+
+        <ul class="features">
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>Composition API</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>関心の分離</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>「テストを最初にやる」という考え方</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>再利用性を最大限に考慮したレンダーレスコンポーネント</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>コンポーネントデザインを行う上で役立つテストの書き方</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>一貫性のためのデザインパターン</span>
+          </li>
+          <li>
+            <img class="check"
+              src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+            <span>OptionsかCompositionか？目的に応じて正しいAPIを選択する方法</span>
+          </li>
+        </ul>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="section__content">
+        <h2>含まれる内容</h2>
+
+        <h4>📗 書籍</h4>
+        <p>
+          美しくフォーマットされたPDFとepub。10の章で構成される164ページは、どのような順番でも読むことができます。生涯アクセス権（内容はVueの変化や進化に応じて更新されます）。
+        </p>
+        <p>
+
+        <h4>🏋️‍♂️ エクササイズ（回答付き）</h4>
+        <p>
+          各章の最後には、理解度を確かめるためのエクササイズが含まれます。ソースコードも含まれ、その中にエクササイズの回答も載せているので、自分の解法が正しかったか確かめることができます。
+        </p>
+
+        <h4>✅ 常にアップデート</h4>
+        <p>
+          ベストプラクティスやテスティングの書籍は本質的に、最新の状態に保ちやすいです。なぜならば、内容が最新である場合のみテストスイートに自信を持つことができるからです！このため、全てのコードスニペットが動作すること、これからもそうであり続けることを保証いたします。
+        </p>
+
+      </div>
+    </section>
+
+    <section id="pricing">
+      <div class="section__content">
+        <div class="cards">
+          <div class="purchasing-parity">            
+          </div>
+
+          <div class="cards__outer">
+            <div class="cards__title">
+              完全なパッケージ
+
+            </div>
+
+            <div class="cards__content">
+              <div class="cards__image-wrapper">
+                <img class="cards__image" src="https://www.flaticon.com/svg/static/icons/svg/3361/3361854.svg">
+              </div>
+
+              <ul class="features">
+                <li>
+                  <img class="check"
+                    src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+                  <span>PDF + epubのダウンロード</span>
+                </li>
+                <li>
+                  <img class="check"
+                    src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+                  <span>ソースコード + エクササイズの回答</span>
+                </li>
+                <li>
+                  <img class="check"
+                    src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
+                  <span>将来のアップデートに対する生涯アクセス権</span>
+                </li>
+              </ul>
+
+              <a 
+                class="cards__content--button button bg-green" 
+                target="_blank" 
+                href="https://gum.co/BPKzQ"
+              >
+                <div>
+                  今すぐ手に入れる($30)
+                </div>
+              </a>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section__content">
+        <div class="call-to-action">
+          <div class="call-to-action__text">
+            "テストしやすいフォーム"と"レンダーレスコンポーネント"の章を無料でプレビューする！
+          </div>
+
+          <form class="email-form">
+            <!-- <input name="email" placeholder="Your email address" class="email-form__email" /> -->
+            <a target="_blank" href="https://app.box.com/s/5lwoe8m6fjt17p6gukp93v5u8qkc8m9b" type="submit" class="email-form__button">プレビューを手に入れる</a>
+          </form>
+
+          <div class="call-to-action__text">
+            または、確かめる必要がなければ今すぐ。 <a href="#pricing">購入できます</a>。
+          </div>
+        </div>
+
+
+        <div class="preview__download d-none">
+          <a target="_blank" href="https://app.box.com/s/ymmknytu2qev0l0jdgsqh9hgr50zuikz">
+            プレビュー
+            </a>.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section__content">
+        <h2>よくあるご質問</h2>
+        <h4>この本は私の役に立ちますか？</h4>
+        <p>
+          もしかしたら！この本は多少のJavaScript及びVue.jsの経験を持ち、もっと発展的なパターンを学びたいと考えている開発者を対象としています。
+        </p>
+
+        <h4>コンテンツを入手する方法は？</h4>
+        <p>
+          <a 
+            class="white"
+            target="_blank" 
+            href="https://gum.co/BPKzQ"
+          >Gumroad</a>
+          を通じて購入可能です。PDFとEPUBのフォーマットでダウンロードできます。同じ場所からアップデートもダウンロード可能です（ご存じの通り、JavaScriptの変化のスピードはとても速いです）。
+        </p>
+
+        <h4>購買力平価（購入サポート）は提供していますか？</h4>
+
+
+
+        <p>
+          はい！全ての国が同じ購買力を持っているわけではないことは理解しています。
+          <a class="white" href="mailto:lachlan@vuejs-course.com">
+            メールを送って、
+          </a>
+          いくらなら支払い可能かお知らせください。ご協力できるかもしれません！
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section__content">
+        <h3>私について</h3>
+        <div class="profile">
+          <img class="profile__image" src="https://avatars3.githubusercontent.com/u/19196536?s=460&v=4">
+        </div>
+        <p class="who-am-i">
+          こんにちは！私はラクランと申します。Vue.jsのチームメンバーで品質の高いソフトウェアの愛好家です。
+        </p>
+
+        <p class="who-am-i">
+        私は、
+<a href="https://www.udemy.com/user/lachlan-miller-4/">講座</a>,
+          <a href="/books">書籍</a>や
+          <a href="https://www.youtube.com/channel/UCydNBt-h2Cox_Ub_GzspneQ?view_as=subscriber">Youtubeチャンネルを通じて</a>テストしやすいVue.jsアプリケーションの作り方を何万人もの開発者に教えてきました。
+        </p>
+
+        <p class="who-am-i">
+          <a href="https://github.com/lmiller1990">GitHub</a>や
+          <a href="https://twitter.com/Lachlan19900">Twitter</a>
+          上で私を見つけることができますし、古き良き
+          <a href="mailto:lachlan@vuejs-course.com">Eメール</a>を送っていただいてもかまいません。
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+</body>
+
+</html>

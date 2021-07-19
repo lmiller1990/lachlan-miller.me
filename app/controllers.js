@@ -60,6 +60,12 @@ router.get('/design-patterns-for-vuejs', function (req, res) {
         landingPage: landingPage
     });
 });
+router.get('/design-patterns-for-vuejs-ja', function (req, res) {
+    var landingPage = fs.readFileSync('./app/views/marketing/design-patterns-for-vuejs-ja.html');
+    res.render('marketing/design-patterns-for-vuejs', {
+        landingPage: landingPage
+    });
+});
 router.get('/screencasts', function (req, res) {
     res.render('screencasts/index');
 });
