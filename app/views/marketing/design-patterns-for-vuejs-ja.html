@@ -41,7 +41,7 @@
             const $button = $form.querySelector('.email-form__button')
             $button.setAttribute('disabled', 'disabled')
             $button.textContent = 'Submitting...'
-            await postEmail({ email: $email.value, referrer: 'lachlan-miller.me/design-patterns' })
+            await postEmail({ email: $email.value, referrer: 'n-miller.me/design-patterns' })
             $button.removeAttribute('disabled')
             $button.textContent = 'Thanks!'
             const $preview = document.querySelector('.preview__download').classList.remove('d-none')
@@ -139,7 +139,7 @@
           </form>
 
           <div class="call-to-action__text">
-            または、確かめる必要がなければ今すぐ。 <a href="#pricing">購入できます</a>。
+            または、確かめる必要がなければ<a href="#pricing">今すぐ購入できます</a>。
           </div>
         </div>
 
@@ -217,18 +217,18 @@
 
         <h4>📗 書籍</h4>
         <p>
-          美しくフォーマットされたPDFとepub。10の章で構成される164ページは、どのような順番でも読むことができます。生涯アクセス権（内容はVueの変化や進化に応じて更新されます）。
+          美しくフォーマットされたPDFとEPUB。10の章で構成される164ページは、どのような順番でも読むことができます。将来のアップデートに対する生涯アクセス権（内容はVueの変化や進化に応じて更新されます）。
         </p>
         <p>
 
         <h4>🏋️‍♂️ エクササイズ（回答付き）</h4>
         <p>
-          各章の最後には、理解度を確かめるためのエクササイズが含まれます。ソースコードも含まれ、その中にエクササイズの回答も載せているので、自分の解法が正しかったか確かめることができます。
+          各章の最後には、理解度を確かめるためのエクササイズがあります。ソースコードも含まれ、その中にエクササイズの回答も載せているので、自分の解法が正しかったか確かめることができます。
         </p>
 
-        <h4>✅ 常にアップデート</h4>
+        <h4>✅ 定期的なアップデート</h4>
         <p>
-          ベストプラクティスやテスティングの書籍は本質的に、最新の状態に保ちやすいです。なぜならば、内容が最新である場合のみテストスイートに自信を持つことができるからです！このため、全てのコードスニペットが動作すること、これからもそうであり続けることを保証いたします。
+          ベストプラクティスやテスティングの書籍は本質的に、最新の状態に保ちやすいです。なぜならば、内容が最新である場合のみテストスイートに自信を持つことができるからです！このため、全てのコードスニペットが動作すること、及びこれからもそうであり続けることを保証いたします。
         </p>
 
       </div>
@@ -255,7 +255,7 @@
                 <li>
                   <img class="check"
                     src="https://cdn3.iconfinder.com/data/icons/flat-actions-icons-9/792/Tick_Mark_Dark-512.png">
-                  <span>PDF + epubのダウンロード</span>
+                  <span>PDF + EPUBのダウンロード</span>
                 </li>
                 <li>
                   <img class="check"
@@ -317,7 +317,7 @@
         <h2>よくあるご質問</h2>
         <h4>この本は私の役に立ちますか？</h4>
         <p>
-          もしかしたら！この本は多少のJavaScript及びVue.jsの経験を持ち、もっと発展的なパターンを学びたいと考えている開発者を対象としています。
+          もしかしたら！この本は多少のJavaScript及びVue.jsに関する多少の経験を持ち、もっと発展的なパターンを学びたいと考えている開発者を対象としています。
         </p>
 
         <h4>コンテンツを入手する方法は？</h4>
@@ -328,6 +328,7 @@
             href="https://gum.co/BPKzQ"
           >Gumroad</a>
           を通じて購入可能です。PDFとEPUBのフォーマットでダウンロードできます。同じ場所からアップデートもダウンロード可能です（ご存じの通り、JavaScriptの変化のスピードはとても速いです）。
+          全ての内容は、最新の状態に保っていきます。
         </p>
 
         <h4>購買力平価（購入サポート）は提供していますか？</h4>
@@ -346,16 +347,15 @@
 
     <section>
       <div class="section__content">
-        <h3>私について</h3>
+        <h3>作者について</h3>
         <div class="profile">
           <img class="profile__image" src="https://avatars3.githubusercontent.com/u/19196536?s=460&v=4">
         </div>
         <p class="who-am-i">
-          こんにちは！私はラクランと申します。Vue.jsのチームメンバーで品質の高いソフトウェアの愛好家です。
+          みなさん、初めまして！ミラーと申します。私はVue.jsのチームメンバーで、品質の高いソフトウェアの愛好家です。
         </p>
 
         <p class="who-am-i">
-        私は、
 <a href="https://www.udemy.com/user/lachlan-miller-4/">講座</a>,
           <a href="/books">書籍</a>や
           <a href="https://www.youtube.com/channel/UCydNBt-h2Cox_Ub_GzspneQ?view_as=subscriber">Youtubeチャンネルを通じて</a>テストしやすいVue.jsアプリケーションの作り方を何万人もの開発者に教えてきました。
