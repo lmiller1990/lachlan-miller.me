@@ -1,0 +1,1 @@
+The `infer` keyword is a little tricky at first. It is used to ensure all new types are declared explicitly. This definition alone isn't very useful, though. To understand and use `infer`, we first must understand conditional types.

@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "Side Projects of HN making $500 / month",
+    slug: "side-projects-of-hacker-news",
+    published: "2021-12-27",
+    description: "A list of side projects by Hacker News users, many pulled $500 / month.",
+    image: "https://images.unsplash.com/photo-1560094824-13b9bc472f86?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MTN8fGJvdW5jZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60"
+  },
+  {
     title: "Advanced TypeScript: A Type Safe Store for Vue 3",
     slug: "advanced-type-a-type-safe-store-for-vue-3",
     published: "2021-04-30",
