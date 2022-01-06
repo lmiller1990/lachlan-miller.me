@@ -1,4 +1,4 @@
-## 2021 in Summary
+# 2021 in Summary
 
 2021 was an exciting year for me in several areas:
 
@@ -6,13 +6,13 @@
 - content creation
 - personal
 
-## Career and OSS
+# Career and OSS
 
 I remained at [Cypress](https://www.cypress.io/) during 2021. We launched the alpha of our component testing runner, and are working towards GA (general availability).
 
 I also continued working on various OSS projects, mainly around Vue and [Test Utils](https://github.com/vuejs/vue-test-utils-next). Test Utils v2 is stable and positioned well moving into 2022, when Vue 3 should become the main version on npm.
 
-## Content Creation
+# Content Creation
 
 I re-recorded both of my Udemy courses. They performed really well, I'm really happy to make some money while doing what I love - coding and teaching.
 
@@ -32,24 +32,23 @@ Total revenue is shown below. I'm excited and honored people are happy to pay fo
 
 I also continued growing my internet presence via my [YouTube channel](https://youtube.com/c/LachlanMiller). 
 
-| Metric | Value | 
-| --- | ----------- | ----- |
 | Views | Watch Time (hours) | + Subscribers |
+| --- | ----------- | ----- |
 | 79.2K | 3.3K | 1.7K |
 
 Here's a graphic:
 
-![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/2021-summary-photos/yt-metrics.jpg?raw=true)
+![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/2021-summary-photos/yt-metrics.png?raw=true)
 
 I'm almost eligible for monitizing my channel! 
 
-![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/2021-summary-photos/yt-money.jpg?raw=true)
+![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/2021-summary-photos/yt-money.png?raw=true)
 
-## Personal
+# Personal
 
 A big year on a personal basis, too. I feel like many years of hard work have finally started to pay off:
 
-### House
+## House
 
 After many years of saving, I purchased a house! Lily did a great job with the interior design. Here are some photos.
 
@@ -67,7 +66,7 @@ I also got two black cats:
 
 ![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/2021-summary-photos/cats.jpg?raw=true)
 
-### Communication Skills
+## Communication Skills
 
 I participated in a weekly bookclub with my friends, where we study communication skills, empathy and leadership. I started recording our sessions more diligently around May. Here's a list of books/videos we covered:
 
@@ -102,7 +101,7 @@ I participated in a weekly bookclub with my friends, where we study communicatio
 
 I learned a lot about communication, empathy and how to be more open minded. The skills definitely translated into my life - one of the topics, Emotional Intelligence, claimed people with higher EQs generally earn more than their high IQ counter parts. I am earning more than ever and got the biggest raise I've ever received without changing jobs, and I think it's primarily due to my improved soft skills. These skills I've learned are probably the most high impact change of 2021.
 
-## Moving Forward
+# Moving Forward
 
 I'm excited for 2022. I'd like to keep up with:
 

@@ -32,19 +32,24 @@ main {
   }
 }
 
-h3 {
-  font-size: 2rem;
-  margin: 0 0 10px 0;
+h1, h2, h3, h4, h5, h6 {
+  margin: 10px 0 15px 0;
 }
 
-h2, h4 {
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
   font-size: 1.5rem;
-  margin: 10px 0 15px 0;
+}
+
+h3 {
+  font-size: 1rem;
 }
 
 h5 {
   font-size: 1.25rem;
-  margin: 15px 0 5px 0;
 }
 
 td, th {
