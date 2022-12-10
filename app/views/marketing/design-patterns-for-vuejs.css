@@ -161,6 +161,23 @@ section {
 }
 
 @media screen and (max-width: 768px) {
+  .desktop {
+    display: none;
+  }
+
+}
+
+@media screen and (min-width: 767px) {
+  .desktop-bg {
+    background-color: #f8d13f !important;
+  }
+
+  .mobile {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
   .section__content {
     margin: 0 20px;
   }
@@ -181,7 +198,7 @@ section {
 }
 
 .cards__image {
-  height: 100px;
+  height: 250px;
 }
 
 .cards__title {
