@@ -3,7 +3,7 @@ exports.__esModule = true;
 var express = require('express');
 var fs = require('fs');
 var controllers_1 = require("./controllers");
-var PORT = 8000;
+var PORT = 7000;
 try {
     var app = express();
     app.set('view engine', 'pug');
