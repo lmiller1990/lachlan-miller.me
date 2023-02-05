@@ -8,10 +8,17 @@ export interface Musing {
 
 export const musings: Musing[] = [
   {
+      title: "Reflecting on 2022",
+      slug: "2022-in-summary",
+      published: "2022-02-05",
+      description: "My best, most exciting and interesting memories from 2022.",
+      image: "https://images.unsplash.com/photo-1501949997128-2fdb9f6428f1?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+  },
+  {
       title: "Reflecting on 2021",
       slug: "2021-in-summary",
       published: "2021-01-06",
-      description: "2021 was a really big year for me, Here is some of my best memorie and accomplishments.",
+      description: "2021 was a really big year for me, Here is some of my best memories and accomplishments.",
       image: "https://images.unsplash.com/photo-1501949997128-2fdb9f6428f1?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
   },
   {
