@@ -1,0 +1,367 @@
+<h1>Emitting Events</h1>
+<p>Vue's primary mechanic for passing data <em>down</em> to components is <code>props</code>. In contrast, when components needs to communicate with another component higher in the hierarchy, you do so by <em>emitting events</em>.</p>
+<h2>Defining Events</h2>
+<p>When using Script Setup, events are defined with the <code>defineEmits</code> compiler macro, and emitted using the returned value (traditionally called <code>emit</code> or <code>emits</code>):</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&#x27;greet&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span>
+}&gt;()
+</code></pre>
+<p>You can then emit the event:</p>
+<pre class="hljs"><code>emits(<span class="hljs-string">&#x27;greet&#x27;</span>, <span class="hljs-string">&#x27;hello!&#x27;</span>)
+</code></pre>
+<p>The nice thing about <code>defineEmits</code> is it's type safe; as long as you are using TypeScript (which you should be!) you will get a compiler error.</p>
+<p>You can provide any number of positional arguments:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&quot;signup&quot;</span>, <span class="hljs-attr">username</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">password</span>: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span>
+}&gt;();
+</code></pre>
+<p>Although if there is a large number (2 or more) or some logic grouping (in this case, a user) I much prefer to group them:</p>
+<pre class="hljs"><code><span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&quot;signup&quot;</span>, <span class="hljs-attr">user</span>: { <span class="hljs-attr">username</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">password</span>: <span class="hljs-built_in">string</span> }): <span class="hljs-built_in">void</span>
+}&gt;();
+</code></pre>
+<p>I find this both less error prone and easier to understand. More often than not, I end up extracting an <code>interface</code> or <code>type</code> based on these arguments.</p>
+<h2>Responding to Events</h2>
+<p>Defining and emitting events is all good and well, but in general you won't just do this arbitrarily, but in response to a user doing something, like clicking, typing, or something else.</p>
+<p>You can listen for an event using <code>v-on:event</code>, or better yet, the shorthand - <code>@event</code>. Most people reading this book wil know this - but there's some more intricacies that are worth understanding. There are <em>hundreds</em> of events. You've probably <code>@click</code> before:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;foo()&quot;</span>&gt;</span>Button<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+</code></pre>
+<p>But how about <code>canplaythrough</code>?</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">video</span> @<span class="hljs-attr">canplaythrough</span>=<span class="hljs-string">&quot;autoplay()&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">video</span>&gt;</span>
+</code></pre>
+<p>Once the <code>&lt;video&gt;</code> is ready, you can autoplay it! That's annoying, though, so don't do that. There are lots of events available for <code>HTMLVideoElement</code>, though, so making a really clean video player that uses the native events would be a good learning project. You can find a full list of native events <a href="https://developer.mozilla.org/en-US/docs/Web/Events#event_listing">here</a>: https://developer.mozilla.org/en-US/docs/Web/Events#event_listing.</p>
+<p>You can also listen to custom events. Before we get into those, let's talk native events a little more.</p>
+<h2>The Secret Life of <code>@event</code></h2>
+<p>There's a neat little tool called the <a href="https://play.vuejs.org/">Vue SFC Playground</a>: https://play.vuejs.org/. It will let you prototype, and more importantly, see what your SFCs are compiled to.</p>
+<p><img src="https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/events-in-vue-sfc-playground.png?raw=true" alt=""></p>
+<p>Let's take a look at <code>&lt;Counter&gt;</code>, which calls <code>foo</code> in three different ways:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&quot;greet&quot;</span>, <span class="hljs-attr">message</span>: string): <span class="hljs-keyword">void</span>
+  (event: <span class="hljs-string">&quot;signup&quot;</span>, <span class="hljs-attr">username</span>: string, <span class="hljs-attr">password</span>: string): <span class="hljs-keyword">void</span>
+  (event: <span class="hljs-string">&quot;signup&quot;</span>, <span class="hljs-attr">user</span>: { <span class="hljs-attr">username</span>: string, <span class="hljs-attr">password</span>: string }): <span class="hljs-keyword">void</span>
+}&gt;();
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">count</span>(<span class="hljs-params">...args: unknown[]</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(args);
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count()&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;$event =&gt; count($event)&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+</code></pre>
+<p>The first <code>&lt;button&gt;</code> calls <code>count</code> without parenthesis - as a callback. If you've done React, it's similar to what you often see there:</p>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Counter</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">count</span> (<span class="hljs-params">...args</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(args)
+  }
+  <span class="hljs-keyword">return</span> <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onClick</span>=<span class="hljs-string">{count}</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></span>
+}
+</code></pre>
+<p>Both frameworks do the same thing, at least conceptually. If you pass a callback function to a native event, you get the native event as the first argument (unless you pass something else).</p>
+<p>Vue will a native event. A <code>PointerEvent</code>, in fact, with <code>type: &quot;click&quot;</code>, <code>x</code> and <code>y</code> values, and various other interesting things. React will surface a <code>SyntheticBaseEvent</code> - React has it's own event system - but it does give you native event under the <code>nativeEvent</code> property.</p>
+<p>Vue and React don't do what you'd expect, not really! Take this snippet of plain old HTML:</p>
+<pre class="hljs"><code><span class="hljs-comment">&lt;!-- Not a template. This is just HTML--&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">count</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">arguments</span>)
+  }
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">&quot;count&quot;</span>&gt;</span>Counter<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+</code></pre>
+<p>Clicking this logs ... nothing. Changing it to <code>onclick=&quot;count()&quot;</code> will call <code>count()</code>, but you won't get the native event. If you want that, you need to write some JavaScript:</p>
+<pre class="hljs"><code><span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&#x27;button&#x27;</span>).addEventListener(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function"><span class="hljs-params">event</span> =&gt;</span> {
+  <span class="hljs-comment">// event is PointerEvent</span>
+})
+</code></pre>
+<p>This is what Vue and React are doing under the hood, eventually, if you go deep enough in the source code. You can see the <a href="https://github.com/vuejs/core/blob/3be4e3cbe34b394096210897c1be8deeb6d748d8/packages/runtime-dom/src/modules/events.ts#L15-L21"><code>addEventListener</code> function in the Vue source code here: https://github.com/vuejs/core/blob/3be4e3cbe34b394096210897c1be8deeb6d748d8/packages/runtime-dom/src/modules/events.ts#L15-L21</a>. If you wnat to learn more, you can take a look at the code base, and see where it's used, or take a look at the tests.</p>
+<p>Let's see how a component with events compiles. We can take a look at Vue with the SFC Playground. To clarify, given:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">count</span> (<span class="hljs-params"></span>) </span>{}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+
+<span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+</code></pre>
+<p>We get:</p>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> { 
+  openBlock <span class="hljs-keyword">as</span> _openBlock, 
+  createElementBlock <span class="hljs-keyword">as</span> _createElementBlock 
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;vue&quot;</span>
+
+<span class="hljs-keyword">const</span> __sfc__ = {
+  <span class="hljs-attr">__name</span>: <span class="hljs-string">&#x27;App&#x27;</span>,
+  <span class="hljs-function"><span class="hljs-title">setup</span>(<span class="hljs-params">__props</span>)</span> {
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">count</span> (<span class="hljs-params"></span>) </span>{}
+
+    <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">_ctx, _cache</span>) =&gt;</span> {
+      <span class="hljs-keyword">return</span> (
+        _openBlock(), 
+        _createElementBlock(<span class="hljs-string">&quot;button&quot;</span>, { 
+          <span class="hljs-attr">onClick</span>: count 
+        }, 
+        <span class="hljs-string">&quot;Count&quot;</span>)
+      )
+    }
+  }
+}
+__sfc__.__file = <span class="hljs-string">&quot;src/App.vue&quot;</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> __sfc__
+</code></pre>
+<p>If you have written Vue without Script Setup, you'll see this is a regular component definition using <code>setup</code>. It returns a (somewhat verbose) render function. The key is <code>{ onClick: count }</code>, which is the second argument to <code>_createElementBlock</code>. A more human readable version is:</p>
+<pre class="hljs"><code><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  setup () {
+    <span class="hljs-keyword">return</span> <span class="hljs-function">() =&gt;</span> h(<span class="hljs-string">&#x27;button&#x27;</span>, { <span class="hljs-attr">onClick</span>: count }, <span class="hljs-string">&quot;Count&quot;</span>)
+  }
+}
+</code></pre>
+<p>See the Render Functions chapter for more insight on exactly what <code>h</code> is and how this works. Ultimately, you can think of <code>@click=&quot;count&quot;</code> as simply passing an <code>onClick</code> prop with <code>count</code> as the value. In fact, these two are identical:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">:onclick</span>=<span class="hljs-string">&quot;count&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+</code></pre>
+<p>You can verify this is using the SFC Playground.</p>
+<p>How about the other two?</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count()&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;$event =&gt; count($event)&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+</code></pre>
+<p>The Vue SFC Playground shows they compile to something slightly different:</p>
+<pre class="hljs"><code>_createElementVNode(<span class="hljs-string">&quot;button&quot;</span>, {
+  <span class="hljs-attr">onClick</span>: _cache[<span class="hljs-number">0</span>] || (_cache[<span class="hljs-number">0</span>] = $event =&gt; (count()))
+}, <span class="hljs-string">&quot;Count&quot;</span>),
+
+<span class="hljs-comment">// ... </span>
+
+_createElementVNode(<span class="hljs-string">&quot;button&quot;</span>, {
+  <span class="hljs-attr">onClick</span>: _cache[<span class="hljs-number">1</span>] || (_cache[<span class="hljs-number">1</span>] = $event =&gt; count($event))
+}, <span class="hljs-string">&quot;Count&quot;</span>)
+</code></pre>
+<p>They are very similar. The only difference is the first one is called with no arguments (not even the event), but the second one is basically the same as what we've written in the template.</p>
+<p>This is mostly academic, but it's good to know how things work under the hood. I like the second option better, since it's more explicit, and closer to standard JavaScript. I like this parallel:</p>
+<pre class="hljs"><code><span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&#x27;button&#x27;</span>).addEventListener(<span class="hljs-string">&#x27;click&#x27;</span>, $event =&gt; { ... })
+
+&lt;button @click=<span class="hljs-string">&quot;$event =&gt; count($event)&quot;</span>&gt;Count&lt;/button&gt;
+</code></pre>
+<p>People say &quot;React is just JavaScript&quot;, but so is Vue, once you look a little closer.</p>
+<p>So, three ways to handle events:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count()&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;$event =&gt; count($event)&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+</code></pre>
+<p>There isn't a &quot;best&quot; way, but my in my experience, I've come up with some guidelines I like to use.</p>
+<p>If I am not passing any arguments, I use the first style - <code>@event=&quot;handler&quot;</code>. For example:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;count&quot;</span>&gt;</span>Count<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">count</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">// something</span>
+  }
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>If I am passing any arguments, I use the third style - <code>@event=&quot;$event =&gt; handler(...)&quot;</code>. If I want the native <code>$event</code>, I write it. If not, I'll omit it. For example:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">v-for</span>=<span class="hljs-string">&quot;todo of todos&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{{ todo.name }}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;() =&gt; handleComplete(todo)&quot;</span>&gt;</span>Complete<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+  <span class="hljs-keyword">import</span> type { Todo } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;...&quot;</span>
+  <span class="hljs-keyword">const</span> todos: Todo[] = [ 
+    <span class="hljs-comment">// ...</span>
+  ]
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleComplete</span>(<span class="hljs-params">todo: Todo</span>) </span>{
+    <span class="hljs-comment">// ...</span>
+  }
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>The only reason is I like to think of <code>@click</code> as taking a <em>callback</em>. If you do pass a function invocation, eg <code>@click=&quot;handleComplete(todo)&quot;</code>, Vue converts it to the <code>$event =&gt; handleComplete(todo)</code> syntax under the hood anyway. I just like to be consistent.</p>
+<p>I've also found that using this consistent style helps greatly when onboarding developers from other frameworks, such as React, to be helpful. Even though <em>you</em> know how Vue the invocation style will be transformed by Vue under the hood, not everyone else will, nor should they need to.</p>
+<h2>Some Simple Guidelines for Events</h2>
+<p>Now we have a fairly deep understanding of events, how to define them, and how they work under the hood. Let's see some examples of how we can use them, and some guidelines we can set to keep things clean and understandable.</p>
+<h2>Write a Function!</h2>
+<p>We will start with the below <code>&lt;PatientForm&gt;</code> and improve it. If you see some issues, don't worry - we will be fixing everything - please bare with me!</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Create Patient<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">form</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.firstName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.familyName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;emits(&#x27;createPatient&#x27;, patient.firstName, patient.familyName)&quot;</span>&gt;</span>
+      Submit
+    <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { reactive } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;vue&#x27;</span>;
+
+<span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&#x27;createPatient&#x27;</span>, <span class="hljs-attr">firstName</span>: string, <span class="hljs-attr">familyName</span>: string): <span class="hljs-keyword">void</span>
+}&gt;()
+
+<span class="hljs-keyword">const</span> patient = reactive({
+  <span class="hljs-attr">firstName</span>: <span class="hljs-string">&#x27;&#x27;</span>,
+  <span class="hljs-attr">familyName</span>: <span class="hljs-string">&#x27;&#x27;</span>
+})
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>This works - but the template is going to get difficult to work with as we add more fields. In general, I recommend keeping templates clean and simple, and opt to move as much as possible into the <code>&lt;script&gt;</code> tag. For this reason, unless it's a very simple event, I prefer to avoid using <code>emits</code> in <code>&lt;template&gt;</code>. It's a personal preference, but once I've found to help keep my code bases in good shape.</p>
+<p>In addition, I like to have a convention for naming event handlers. The name isn't really important; having a good convention is, though. I like to use <code>handle</code> or <code>on</code>. So, in this case, I'm going to add a <code>handleCreatePatient</code> or <code>onCreatePatient</code> function. Alternatively, if you like to be concise, and since the component is focused on one thing - creating patients - <code>handleCreate</code> works well, too.</p>
+<p>I'm not interested in passing any arguments, so I'm going to go for the <code>@click=&quot;handleCreate&quot;</code> syntax.</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Create Patient<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">form</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.firstName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.familyName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;handleCreate&quot;</span>&gt;</span>
+      Submit
+    <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { reactive } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;vue&#x27;</span>;
+
+<span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&#x27;createPatient&#x27;</span>, <span class="hljs-attr">firstName</span>: string, <span class="hljs-attr">familyName</span>: string): <span class="hljs-keyword">void</span>
+}&gt;()
+
+<span class="hljs-keyword">const</span> patient = reactive({
+  <span class="hljs-attr">firstName</span>: <span class="hljs-string">&#x27;&#x27;</span>,
+  <span class="hljs-attr">familyName</span>: <span class="hljs-string">&#x27;&#x27;</span>
+})
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleCreate</span> (<span class="hljs-params"></span>) </span>{
+  emits(<span class="hljs-string">&#x27;createPatient&#x27;</span>, patient.firstName, patient.familyName)
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>A bit more code - but I think the component is more clear now.</p>
+<h2>Be Cautious with Positional Arguments</h2>
+<p>Our <code>createPatient</code> event uses positional arguments now. We could switch the order of <code>firstName</code> and <code>familyName</code>:</p>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleCreate</span> (<span class="hljs-params"></span>) </span>{
+  emits(<span class="hljs-string">&#x27;createPatient&#x27;</span>, patient.familyName, patient.firstName)
+}
+</code></pre>
+<p>Now we've got a pretty significant bug - but no compilation error, since they are both <code>string</code> types.</p>
+<p>In general, unless I only have a small number of arguments, I like to use objects for my event payloads. Now is a great time to extract an <code>interface</code>:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Create Patient<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">form</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.firstName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.familyName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;handleCreate&quot;</span>&gt;</span>
+      Submit
+    <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { reactive } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;vue&#x27;</span>;
+
+interface Patient {
+  <span class="hljs-attr">firstName</span>: string;
+  familyName: string;
+}
+
+<span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&#x27;createPatient&#x27;</span>, <span class="hljs-attr">patient</span>: Patient): <span class="hljs-keyword">void</span>
+}&gt;()
+
+<span class="hljs-keyword">const</span> patient = reactive&lt;Patient&gt;({
+  <span class="hljs-attr">firstName</span>: <span class="hljs-string">&#x27;&#x27;</span>,
+  <span class="hljs-attr">familyName</span>: <span class="hljs-string">&#x27;&#x27;</span>
+})
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleCreate</span> (<span class="hljs-params"></span>) </span>{
+  emits(<span class="hljs-string">&#x27;createPatient&#x27;</span>, patient)
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>We also pass <code>Patient</code> to <code>reactive</code>. Big improvement!</p>
+<h2>Reusing Object Types</h2>
+<p>This isn't a one size fits all rule, but a pattern I've often found myself using is to put the type definition for the object payload in a separate file, so I can reuse it when I respond to the event. One of the downsides of <code>&lt;script setup&gt;</code> is you cannot arbitrarily export values or types - so you need a separate module:</p>
+<pre class="hljs"><code><span class="hljs-comment">// patient.ts</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> Patient {
+  <span class="hljs-attr">firstName</span>: <span class="hljs-built_in">string</span>;
+  familyName: <span class="hljs-built_in">string</span>;
+}
+</code></pre>
+<p>Now <code>&lt;PatientForm&gt;</code> looks like this:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { reactive } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;vue&#x27;</span>;
+<span class="hljs-keyword">import</span> type { Patient } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./patient&#x27;</span>;
+
+<span class="hljs-keyword">const</span> emits = defineEmits&lt;{
+  (event: <span class="hljs-string">&#x27;createPatient&#x27;</span>, <span class="hljs-attr">patient</span>: Patient): <span class="hljs-keyword">void</span>
+}&gt;()
+
+<span class="hljs-comment">// ...</span>
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>More importantly, I can do the same pattern where I use <code>&lt;PatientForm&gt;</code>:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">PatientForm</span> @<span class="hljs-attr">createPatient</span>=<span class="hljs-string">&quot;handleCreate&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> type { Patient } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./patient&#x27;</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleCreate</span> (<span class="hljs-params">patient: Patient</span>) </span>{
+  <span class="hljs-comment">// fully type safe!</span>
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>Or, like many large projects, if you extract your HTTP calls to some kind of module:</p>
+<pre class="hljs"><code><span class="hljs-comment">// api.ts</span>
+<span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { Patient } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./patient&#x27;</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> API = {
+  <span class="hljs-attr">createPatient</span>: <span class="hljs-function">(<span class="hljs-params">patient: Patient</span>) =&gt;</span> {
+    <span class="hljs-comment">// ...</span>
+  }
+}
+</code></pre>
+<p>Your component might simply be:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">PatientForm</span> @<span class="hljs-attr">createPatient</span>=<span class="hljs-string">&quot;API.createPatient&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;ts&quot;</span> <span class="hljs-attr">setup</span>&gt;</span><span class="javascript">
+<span class="hljs-keyword">import</span> { API } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./api&#x27;</span>
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>We get type safety all the way from the event getting emitted to the API call that performs the POST request. Plus, our component is very concise - because all the business logic is abtracted away into separate modules that are not coupled to our framework, as they should be.</p>
+<h2>Use the <code>submit</code> Event Correctly</h2>
+<p>There's one more improvement we can make. If you are writing a form, specifically, you always should use the <code>submit</code> event. The <code>click</code> event on the <code>&lt;button&gt;</code> is not only not necessary, but not correct. Forms should be accessible, and part of that is allowing them to be submitted without a mouse, for example by pressing enter. <code>@submit</code> handles this, but <code>@click</code> won't.</p>
+<p>Here's how <code>&lt;template&gt;</code> should look:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">template</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>Create Patient<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">form</span> @<span class="hljs-attr">submit.prevent</span>=<span class="hljs-string">&quot;handleCreate&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.firstName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">v-model</span>=<span class="hljs-string">&quot;patient.familyName&quot;</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span>&gt;</span>
+      Submit
+    <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">template</span>&gt;</span>
+</code></pre>
+<p>Now our form, and our component is complete.</p>
+<h2>Conclusion</h2>
+<p>We discussed emitting events in great detail, including how to declare component events in a type safe fashion, and some techniques to achieve type safety, all while keeping our <code>&lt;template&gt;</code> concise and our <code>&lt;script&gt;</code> consistent.</p>
+<p>We also did a deep dive into how Vue's <code>@event</code> syntax actually compiles, and saw it's just JavaScript under the hood - although Vue is a powerful framework, and understand how it works is not at all necessary, it sure is useful to have insight into what's happening under the hood - you never know when it might come in handy.</p>

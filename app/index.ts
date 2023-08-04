@@ -2,7 +2,7 @@ const express = require('express')
 const fs = require('fs')
 import { router } from './controllers'
 
-const PORT = 7000
+const PORT = 7001
 
 try {
   const app = express()

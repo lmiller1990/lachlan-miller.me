@@ -3,6 +3,13 @@ exports.__esModule = true;
 exports.articles = void 0;
 exports.articles = [
     {
+        title: "Under the Hood with Events in Vue",
+        slug: "emitting-events-best-practices-vue-3",
+        published: "2023-08-04",
+        description: "Some insights into how I think about handling events in Vue.",
+        image: "https://images.unsplash.com/photo-1560094824-13b9bc472f86?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MTN8fGJvdW5jZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60"
+    },
+    {
         title: "Side Projects of HN making $500 / month",
         slug: "side-projects-of-hacker-news",
         published: "2021-12-27",
