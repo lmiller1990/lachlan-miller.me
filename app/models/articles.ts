@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "The JavaScript Module Clusterfuck",
+    slug: "javascript-module-clusterfuck",
+    published: "2023-08-20",
+    description: "JavaScript has continued to grow in complexity; now we have official two module systems, one hybrid, and one big mess.",
+    image: "https://images.unsplash.com/photo-1588281345136-9893252095bd"
+  },
+  {
     title: "Under the Hood with Events in Vue",
     slug: "emitting-events-best-practices-vue-3",
     published: "2023-08-04",
