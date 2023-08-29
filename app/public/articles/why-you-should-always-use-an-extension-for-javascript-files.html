@@ -8,7 +8,7 @@
 <pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/code.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <p>This also made is easy to load third party modules. Great!</p>
-<p>Notice the extension? <code>code.js</code>. It tells you the file is a JavaScript file! This makes it easy for a browser to know it's JavaScript file, and to handle it like one. Extensions are good, they help other programs know what to expect when encountering a file.</p>
+<p>Notice the extension? <code>code.js</code>. It tells you the file is a JavaScript file! The browser will know via the <code>Content-Type</code> header, but having an extension makes it more clear to humans. Extensions are good, they help other programs, and programmers, know what to expect when encountering a file.</p>
 <h1>CommonJS</h1>
 <p>CommonJS is a project to standardize the module ecosystem for JavaScript outside of web browsers. At the time, browsers didn't have a module system (they'd get one eventually, more on that soon). Node.js made CommonJS popular. CommonJS is the one with <code>require</code> and <code>module.exports</code>.</p>
 <p>One weird thing about CommonJS is you don't need an extension. If you have</p>
@@ -35,7 +35,7 @@ foo()
   <span class="hljs-comment">// do something with mod</span>
 }
 </code></pre>
-<p>Much like <code>&lt;script src=&quot;/foo.js&quot;&gt;&lt;/script&gt;</code>, you need an extension. Extensions are good! Free information about the file for the browser!</p>
+<p>You don't have a <code>Content-Type</code> header in Node.js, so the extension is even more useful here. It helps Node.js know what type of module you are using.</p>
 <h1>Historical Baggage</h1>
 <p>While we waited for ESM to be finalized and implemented, bundlers like webpack became popular. JavaScript developers don't like waiting for things. Webpack implemented its own module resolution algorithm. It works with everything - CommonJS, ESM, and a bunch of other things. It also works for ESM without extensions! Which isn't really ESM, because ESM has extensions as part of the specification.</p>
 <p>Webpack lets you write:</p>
@@ -43,7 +43,7 @@ foo()
 </code></pre>
 <p>This is not valid in ESM - you need an extension. The reason you can get away with this is that the code you write isn't the code your bundler produces. Bundlers can be set to target various module formats - if you are targeting ESM, it will generally output a <code>.js</code> extension. Or, in the case of webpack, they ship their own runtime that handles modules differently to a browser.</p>
 <h1>The Future</h1>
-<p>If you are writing code to target a real ESM runtime without using a bundler, like Node.js or a browser, you need extensions. If you are using a bundler, you (generally) have the option of omitting the extension.</p>
+<p>If you are writing code to target a real ESM runtime without using a bundler, like Node.js you need an extension. In a browser it's not <em>technically</em> required, since browsers look at the <code>Content-Type</code> header, which is set by the server. On the other hand, If you are using a bundler, you (generally) have the option of omitting the extension. You can include one, though, if you want (and you should)!</p>
 <p>Other than aethestics, there isn't really a good reason to NOT have an extension. Even if you aren't targeting a real ESM runtime right now, you might want to in the future. If you are writing TypeScript, it will work fine too - if you have a <code>foo.ts</code>, you can still write:</p>
 <pre class="hljs"><code><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./foo.js&#x27;</span>
 </code></pre>

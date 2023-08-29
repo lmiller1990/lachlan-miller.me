@@ -16,7 +16,7 @@ If you wanted to write a lot of JavaScript, though, which some people did, you c
 
 This also made is easy to load third party modules. Great!
 
-Notice the extension? `code.js`. It tells you the file is a JavaScript file! This makes it easy for a browser to know it's JavaScript file, and to handle it like one. Extensions are good, they help other programs know what to expect when encountering a file.
+Notice the extension? `code.js`. It tells you the file is a JavaScript file! The browser will know via the `Content-Type` header, but having an extension makes it more clear to humans. Extensions are good, they help other programs, and programmers, know what to expect when encountering a file.
 
 # CommonJS
 
@@ -63,7 +63,7 @@ async function main () {
 }
 ```
 
-Much like `<script src="/foo.js"></script>`, you need an extension. Extensions are good! Free information about the file for the browser! 
+You don't have a `Content-Type` header in Node.js, so the extension is even more useful here. It helps Node.js know what type of module you are using. 
 
 # Historical Baggage
 
@@ -79,7 +79,7 @@ This is not valid in ESM - you need an extension. The reason you can get away wi
 
 # The Future
 
-If you are writing code to target a real ESM runtime without using a bundler, like Node.js or a browser, you need extensions. If you are using a bundler, you (generally) have the option of omitting the extension.
+If you are writing code to target a real ESM runtime without using a bundler, like Node.js you need an extension. In a browser it's not *technically* required, since browsers look at the `Content-Type` header, which is set by the server. On the other hand, If you are using a bundler, you (generally) have the option of omitting the extension. You can include one, though, if you want (and you should)!
 
 Other than aethestics, there isn't really a good reason to NOT have an extension. Even if you aren't targeting a real ESM runtime right now, you might want to in the future. If you are writing TypeScript, it will work fine too - if you have a `foo.ts`, you can still write:
 
