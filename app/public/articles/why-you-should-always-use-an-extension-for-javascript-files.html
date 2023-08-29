@@ -1,0 +1,55 @@
+<h1>Why You Should Always Use an Extension for JavaScript Files</h1>
+<p>Back in the day, JavaScript only ran in the browser. The way to do something simple was:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+  <span class="hljs-comment">/* your code here
+</span></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>If you wanted to write a lot of JavaScript, though, which some people did, you could put it in a separate file:</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/code.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>This also made is easy to load third party modules. Great!</p>
+<p>Notice the extension? <code>code.js</code>. It tells you the file is a JavaScript file! This makes it easy for a browser to know it's JavaScript file, and to handle it like one. Extensions are good, they help other programs know what to expect when encountering a file.</p>
+<h1>CommonJS</h1>
+<p>CommonJS is a project to standardize the module ecosystem for JavaScript outside of web browsers. At the time, browsers didn't have a module system (they'd get one eventually, more on that soon). Node.js made CommonJS popular. CommonJS is the one with <code>require</code> and <code>module.exports</code>.</p>
+<p>One weird thing about CommonJS is you don't need an extension. If you have</p>
+<pre class="hljs"><code><span class="hljs-comment">// code.js</span>
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-string">&#x27;FOO&#x27;</span>
+</code></pre>
+<p>You can load it with</p>
+<pre class="hljs"><code><span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./foo&#x27;</span>)
+</code></pre>
+<p>Node.js figures it out! Even in the early days, there were other extensions available in Node.js, such as <code>.json</code> (JSON format) and <code>.node</code> (native add-on). Now there is <code>.mjs</code> (ES module) and <code>.cjs</code> (CommonJS) as well.</p>
+<p>When you require a module in Node.js, it does something called <em>module resolution</em>. Node.js module resolution is very complex, partially because extensions are optional. This is something <a href="https://deno.com/learn/nodes-complexity-problem">Ryan Dahl lamented about Node.js</a>. In his new project, Deno, extensions are required!</p>
+<h1>ES Modules</h1>
+<p>CommonJS is a module format for the server. For various reasons, <a href="https://requirejs.org/docs/whyamd.html">some discussed here</a>, it was not adopted for the browser. After lots of back and forth, a new specification, ES Modules, or ESM, was finalized and are now supported across all major browsers and in Node.js. ESM is the one with <code>import</code> and <code>export</code>.</p>
+<p>A single module system to rule them all! Kind of!</p>
+<p>ESM works great. You can have a static import:</p>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> { foo } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./foo.js&#x27;</span>
+
+<span class="hljs-comment">// do foo things</span>
+foo()
+</code></pre>
+<p>Or a dynamic import, which is fetched asynchronously:</p>
+<pre class="hljs"><code><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">const</span> mod = <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;./foo.js&#x27;</span>)
+  <span class="hljs-comment">// do something with mod</span>
+}
+</code></pre>
+<p>Much like <code>&lt;script src=&quot;/foo.js&quot;&gt;&lt;/script&gt;</code>, you need an extension. Extensions are good! Free information about the file for the browser!</p>
+<h1>Historical Baggage</h1>
+<p>While we waited for ESM to be finalized and implemented, bundlers like webpack became popular. JavaScript developers don't like waiting for things. Webpack implemented its own module resolution algorithm. It works with everything - CommonJS, ESM, and a bunch of other things. It also works for ESM without extensions! Which isn't really ESM, because ESM has extensions as part of the specification.</p>
+<p>Webpack lets you write:</p>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./foo&#x27;</span>
+</code></pre>
+<p>This is not valid in ESM - you need an extension. The reason you can get away with this is that the code you write isn't the code your bundler produces. Bundlers can be set to target various module formats - if you are targeting ESM, it will generally output a <code>.js</code> extension. Or, in the case of webpack, they ship their own runtime that handles modules differently to a browser.</p>
+<h1>The Future</h1>
+<p>If you are writing code to target a real ESM runtime without using a bundler, like Node.js or a browser, you need extensions. If you are using a bundler, you (generally) have the option of omitting the extension.</p>
+<p>Other than aethestics, there isn't really a good reason to NOT have an extension. Even if you aren't targeting a real ESM runtime right now, you might want to in the future. If you are writing TypeScript, it will work fine too - if you have a <code>foo.ts</code>, you can still write:</p>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;./foo.js&#x27;</span>
+</code></pre>
+<p>And TypeScript knows what to do.</p>
+<p>It works fine for <code>.tsx</code> too - you can write <code>.jsx</code>. Knowing if a file is going to contain JSX before hand is very useful information for compilers and preprocessors.</p>
+<h1>moduleResolution: bundler</h1>
+<p>TypeScript 5.0 recently <a href="https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#moduleresolution-bundler">landed a new <code>moduleResolution</code> configuration option</a> that handles the CommonJS / ESM hybrid format, where you can do things like omit the <code>.js</code> extension for <code>import</code> statements. I've been calling it ChimeraJS.</p>
+<p>This hybrid format doesn't have an official spec, though. I'd still recommend using an extension, even if you are using this format - extensions work with CommonJS, ESM and ChimeraJS. It's free! Why not? You've got nothing to lose, and you'll be writing ESM compliant modules, which is the only module system that is officially supported and works in the browser, Node.js, Deno, and more.</p>
+<p>We finally have a single module system - let's use it and rejoice, instead of carrying forward the historical baggage. CommonJS served us well, but it's time to move forward.</p>

@@ -1,4 +1,4 @@
-## The JavaScript Module Clusterfuck
+## Chimera.js and The JavaScript Module Clusterfuck
 
 JavaScript modules have a long and complicated history. TypeScript works well with both of the most common formats (CommonJS and ES Modules, or ESM). It can even make the two work together, for the most part!
 

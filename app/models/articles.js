@@ -3,11 +3,18 @@ exports.__esModule = true;
 exports.articles = void 0;
 exports.articles = [
     {
-        title: "The JavaScript Module Clusterfuck",
+        title: "Why You Should Always Use an Extension for JavaScript Files",
+        slug: "why-you-should-always-use-an-extension-for-javascript-files",
+        published: "2023-08-29",
+        description: "Writing a file extension has many benefits and very few downsides. It's free, like free beer!",
+        image: "https://images.unsplash.com/photo-1558346489-19413928158b"
+    },
+    {
+        title: "Chimera.js and The JavaScript Module Clusterfuck",
         slug: "javascript-module-clusterfuck",
         published: "2023-08-20",
-        description: "JavaScript has continued to grow in complexity; now we have official two module system, one hybrid, and one big mess.",
-        image: "https://images.unsplash.com/photo-1560094824-13b9bc472f86?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MTN8fGJvdW5jZXxlbnwwfHwwfA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60"
+        description: "JavaScript has continued to grow in complexity; now we have official two module systems, one hybrid, and one big mess.",
+        image: "https://images.unsplash.com/photo-1588281345136-9893252095bd"
     },
     {
         title: "Under the Hood with Events in Vue",

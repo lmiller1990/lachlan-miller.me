@@ -1,4 +1,4 @@
-<h2>Module Extensions in TypeScript</h2>
+<h2>Chimera.js and The JavaScript Module Clusterfuck</h2>
 <p>JavaScript modules have a long and complicated history. TypeScript works well with both of the most common formats (CommonJS and ES Modules, or ESM). It can even make the two work together, for the most part!</p>
 <p>It's important to remember the differences between the two syntaxes - depending on how you configure <code>tsconfig.json</code>, you might end up in a situation where the code you build isn't what you expect. Then, when you go to run it, you might run into a cryptic error like</p>
 <blockquote>
@@ -52,7 +52,7 @@
 <li>Defaults to <code>CommonJS</code> when compiled (but <code>import</code> and <code>export</code> aren't keywords in CommonJS!)</li>
 </ol>
 <p>I think this default behavior is confusing. I think they wanted to decouple the syntax (<code>import</code> vs <code>require</code>) and the compilation target (CommonJS or ESM). I can't really imagine why this was decided; it would really be a lot more simple if you just had to pick one, and the option to compile to another, different module system wasn't available.</p>
-<p>Anwyay, let's try changing <code>module</code> to something else, and see what happens.</p>
+<p>Anyway, let's try changing <code>module</code> to something else, and see what happens.</p>
 <h2><code>module: &quot;es2015&quot;</code></h2>
 <p>What if we change <code>tsconfig.json</code>:</p>
 <pre class="hljs"><code>{
@@ -188,7 +188,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/lachlanmiller/code/dump
 <p>This whole process of how the runtime figures out where to find a module is called <em>module resolution</em>. You can configure that is <code>tsconfig.json</code>, too. There are a bunch of different ones. You can find a list in the <a href="https://www.typescriptlang.org/docs/handbook/module-resolution.html">TypeScript documentation</a>.</p>
 <h2>But I Don't Like Extensions!</h2>
 <p>A lot of people don't want to write extensions, like <code>js</code> and <code>mts</code>. Historically, you didn't need to - CommonJS doesn't require them. Not doing so was &quot;one of my biggest regrets&quot; according to the original author of Node.js, in fact!</p>
-<p>The reality is <em>ESM requries a <code>.js</code> extension</em>. If you want to use ESM, the official runtime of JavaScript that runs in both Node.js and the browser, that's what you need to do.</p>
+<p>The reality is <em>ESM requires a <code>.js</code> extension</em>. If you want to use ESM, the official runtime of JavaScript that runs in both Node.js and the browser, that's what you need to do.</p>
 <p>If you use a bundler, however, the rules no longer apply.</p>
 <h2>&quot;moduleResolution&quot;: &quot;clusterfuck&quot;</h2>
 <p>JavaScript developers have been (over) eager to get their handes on new features far before they are widely supported. Can you blame us? The language hasn't exactly got a great standard library, and the lack of modules, among the (many) other quicks of JavaScript prior to ES2015 left much to be desired.</p>

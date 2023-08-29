@@ -15,7 +15,7 @@ export const articles: Article[] = [
     image: "https://images.unsplash.com/photo-1558346489-19413928158b"
   },
   {
-    title: "The JavaScript Module Clusterfuck",
+    title: "Chimera.js and The JavaScript Module Clusterfuck",
     slug: "javascript-module-clusterfuck",
     published: "2023-08-20",
     description: "JavaScript has continued to grow in complexity; now we have official two module systems, one hybrid, and one big mess.",

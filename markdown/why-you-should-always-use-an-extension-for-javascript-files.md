@@ -41,7 +41,7 @@ When you require a module in Node.js, it does something called *module resolutio
 
 # ES Modules
 
-CommonJS is a module format for the the server. For various reasons, [some discussed here](https://requirejs.org/docs/whyamd.html), it was not adopted for the browser. After lots of back and forth, a new specification, ES Modules, or ESM, was finalized and are now supported across all major browsers and in Node.js. ESM is the one with `import` and `export`. 
+CommonJS is a module format for the server. For various reasons, [some discussed here](https://requirejs.org/docs/whyamd.html), it was not adopted for the browser. After lots of back and forth, a new specification, ES Modules, or ESM, was finalized and are now supported across all major browsers and in Node.js. ESM is the one with `import` and `export`. 
 
 A single module system to rule them all! Kind of!
 

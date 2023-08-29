@@ -86,3 +86,8 @@ pre, pre[class*="language-"] {
 .hljs-strong {
   font-weight: bold;
 }
+
+p > img {
+  margin: auto; 
+  display: block;
+}
