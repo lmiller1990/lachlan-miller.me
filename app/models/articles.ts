@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "Why You Should Always Use an Extension for JavaScript Files",
+    slug: "why-you-should-always-use-an-extension-for-javascript-files",
+    published: "2023-08-29",
+    description: "Writing a file extension has many benefits and very few downsides. It's free, like free beer!",
+    image: "https://images.unsplash.com/photo-1558346489-19413928158b"
+  },
+  {
     title: "The JavaScript Module Clusterfuck",
     slug: "javascript-module-clusterfuck",
     published: "2023-08-20",
