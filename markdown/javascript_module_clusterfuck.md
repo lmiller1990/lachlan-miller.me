@@ -1,4 +1,4 @@
-## Module Extensions in TypeScript
+## The JavaScript Module Clusterfuck
 
 JavaScript modules have a long and complicated history. TypeScript works well with both of the most common formats (CommonJS and ES Modules, or ESM). It can even make the two work together, for the most part!
 
@@ -77,7 +77,7 @@ It's already clear why things are so confusing nowadays in JavaScript projects. 
 
 I think this default behavior is confusing. I think they wanted to decouple the syntax (`import` vs `require`) and the compilation target (CommonJS or ESM). I can't really imagine why this was decided; it would really be a lot more simple if you just had to pick one, and the option to compile to another, different module system wasn't available.
 
-Anwyay, let's try changing `module` to something else, and see what happens.
+Anyway, let's try changing `module` to something else, and see what happens.
 
 ## `module: "es2015"`
 
@@ -286,7 +286,7 @@ This whole process of how the runtime figures out where to find a module is call
 
 A lot of people don't want to write extensions, like `js` and `mts`. Historically, you didn't need to - CommonJS doesn't require them. Not doing so was "one of my biggest regrets" according to the original author of Node.js, in fact!
 
-The reality is *ESM requries a `.js` extension*. If you want to use ESM, the official runtime of JavaScript that runs in both Node.js and the browser, that's what you need to do.
+The reality is *ESM requires a `.js` extension*. If you want to use ESM, the official runtime of JavaScript that runs in both Node.js and the browser, that's what you need to do.
 
 If you use a bundler, however, the rules no longer apply.
 
