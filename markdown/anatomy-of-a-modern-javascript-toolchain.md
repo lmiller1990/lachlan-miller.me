@@ -12,7 +12,7 @@ You can generate the project by running `npm create vite@latest my-app -- --temp
 
 I will make reference to this diagram during this post.
 
-![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/modern-toolchain.png)
+![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/modern-toolchain.png?raw=true)
 
 # Source Code Transformation
 
@@ -74,7 +74,7 @@ Compilers are neat! They are complex! But they can be beautiful! Most of them ha
 
 It's this part of the diagram:
 
-![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/compiler.png)
+![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/compiler.png?raw=true)
 
 I'm not a compiler expert - I just know enough to know how to debug basic issues, which is generally enough. You'll know enough soon, too, and debugging your tool chain won't be so frustrating.
 
@@ -107,7 +107,7 @@ What we need is a *module system* that performs *module resolution* and a *bundl
 
 We need some way to know which modules to include in the final built files. This is usually done using a *module graph*. In our case, it would be something like:
 
-![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/module-graph.png)
+![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/module-graph.png?raw=true)
 
 Many modules can reference the same module. In many React projects, you will `import React` in many files, for example. There's two many module systems. CommonJS and ES Modules. I wrote a bit about them [here](https://lachlan-miller.me/articles/why-you-should-always-use-an-extension-for-javascript-files).
 
@@ -119,7 +119,7 @@ Vite uses esbuild to compile code and implements it's own module resolution algo
 
 So far we described this part of the workflow:
 
-![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/bundler.png)
+![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/bundler.png?raw=true)
 
 It's enough to deploy to production!
 
@@ -144,6 +144,6 @@ esbuild also has a simple [dev server](https://esbuild.github.io/api/#serve), bu
 
 This post explained each part of this diagram at a high level:
 
-![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/modern-toolchain.png)
+![](https://github.com/lmiller1990/lachlan-miller.me/blob/master/app/public/static/toolchain/modern-toolchain.png?raw=true)
 
 Each part of the toolchain has plenty to explore. Interesting in learning more and doing deeper? I'm writing a book about JavaScript tooling, where you'll build your own frontend toolchain, completely from scratch! Sign up to learn more here.
