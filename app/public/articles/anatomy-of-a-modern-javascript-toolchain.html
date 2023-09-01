@@ -1,0 +1,99 @@
+<h2>The Modern JavaScript Frontend Toolchain</h2>
+<p>A modern JavaScript toolchain can be complex. Part of the complexity is the fact you can use JavaScript on the server and in the browser - so often you have, in fact, <em>two</em> toolchains. A lot of the time, it's really convinient to have these in a single repository, and this can lead to complexity, since often both the server and client projects are using or even sharing parts of the toolchain (such as using TypeScript for both the front and back end).</p>
+<p>In addition, most front end projects will make use of a bunch of tools that <em>run</em> in Node.js. After everything is said and done, you end up with lot of moving parts, some of which you might not understand.</p>
+<p>This post will focus on a front end project and describe all the different tools, what they do and why they are useful.</p>
+<p>The example project uses Vite for the dev server and React for the frontend framework. The same concepts are applicable to any combination of tools, though.</p>
+<p>You can generate the project by running <code>npm create vite@latest my-app -- --template react-ts</code>.</p>
+<p>I will make reference to this diagram during this post.</p>
+<p><img src="./toolchain/modern-toolchain.png" alt=""></p>
+<h1>Source Code Transformation</h1>
+<p>In Vite, the entry point to your application is the <code>index.html</code> file. This is where everything starts.</p>
+<pre class="hljs"><code><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">&quot;en&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- ... --&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;root&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/src/main.tsx&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<p>The interesting part is <code>&lt;script src=&quot;/src/main.jsx&quot;&gt;</code>. This is where our code goes. Notice the extension - <code>tsx</code>. To get this to a state where it can run in a browser, it needs to be JavaScript - something that is valid in a <code>js</code> file. This is where the rabbit hole begins!</p>
+<h1>Compilers</h1>
+<p><code>jsx</code> is &quot;JSX is a syntax extension for JavaScript that lets you write HTML-like markup inside a JavaScript file&quot; as noted in the <a href="https://react.dev/learn/writing-markup-with-jsx">React docs</a>. It's not a new language, but an &quot;extension&quot; to JavaScript. We still need some way to handle that, though.</p>
+<p>As a refresher, without JSX, if you want to do:</p>
+<pre class="hljs"><code>function Foo () {
+  const foo: string = 'OK'
+  return &lt;div&gt;{foo}&lt;/div&gt;
+}
+</code></pre>
+<p>You'd need to write:</p>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;react&#x27;</span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Foo</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">return</span> React.createElement(<span class="hljs-string">&#x27;div&#x27;</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;OK&#x27;</span>)
+}
+</code></pre>
+<p>It's not nearly as concise or readable.</p>
+<p>So, we need a <em>compiler</em>. Originally, this was done using <a href="http://babeljs.io">Babel</a>. When you use Vite, it's done using <a href="https://esbuild.github.io">esbuild</a>. More on that later.</p>
+<p>Even if you compile the JSX, you are still left with TypeScript. You'll need a compiler to handle that, too. Luckily, Babel has a plugin system, so you can teach it about both JSX and TypeScript. And esbuild knows how to handle both out of the box!</p>
+<p>Compilers are everywhere. Many projects will have many more (for languages like Sass, CSS-in-JS, Vue files, Svelte files, etc).</p>
+<h2>Compilers Are Cool!</h2>
+<p>Compilers are neat! They are complex! But they can be beautiful! Most of them have a few fundamental steps. Some of them are:</p>
+<ol>
+<li>Parse. This is when the code is broken into tokens.</li>
+<li>Transform. You take the parsed output and manipulate it in some fashion.</li>
+<li>Code Generation. Output the newly transformed representation into whatever you want!</li>
+</ol>
+<p>It's this part of the diagram:</p>
+<p><img src="./toolchain/compiler.png" alt=""></p>
+<p>I'm not a compiler expert - I just know enough to know how to debug basic issues, which is generally enough. You'll know enough soon, too, and debugging your tool chain won't be so frustrating.</p>
+<h1>Bundlers</h1>
+<p>Once you turned your <code>main.tsx</code> into a JavaScript file, you'll see it includes a bunch of <em>other</em> files:</p>
+<pre class="hljs"><code>import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  &lt;React.StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/React.StrictMode&gt;,
+)
+</code></pre>
+<p>None of these will &quot;just work&quot; in a browser!</p>
+<ul>
+<li><code>react</code> and <code>react-dom/client</code> aren't in your <code>src</code> directory.</li>
+<li><code>App.tsx</code> needs to be compiled (as discussed above)</li>
+<li><code>./index.css</code> isn't even JavaScript!</li>
+</ul>
+<p>What we need is a <em>module system</em> that performs <em>module resolution</em> and a <em>bundler</em> to merge it all together.</p>
+<h2>Module Resolution</h2>
+<p>We need some way to know which modules to include in the final built files. This is usually done using a <em>module graph</em>. In our case, it would be something like:</p>
+<p><img src="./toolchain/module-graph.png" alt=""></p>
+<p>Many modules can reference the same module. In many React projects, you will <code>import React</code> in many files, for example. There's two many module systems. CommonJS and ES Modules. I wrote a bit about them <a href="https://lachlan-miller.me/articles/why-you-should-always-use-an-extension-for-javascript-files">here</a>.</p>
+<p>A bundler will usually perform module resolution and create a module graphl of all your modules. Many popular bundlers like webpack and Rollup are extensible, and you can provide a plugin telling them to apply certain transformations, such as apply a JSX and TypeScript compiler to the code.</p>
+<p>esbuild can handle  both the compilation (JSX and TypeScript) and can also create a module graph. It's great!</p>
+<p>Vite uses esbuild to compile code and implements it's own module resolution algorithm based on ES Modules (with some additions to support importing from <code>node_modules</code>, etc). It uses Rollup to bundle for production.</p>
+<p>So far we described this part of the workflow:</p>
+<p><img src="./toolchain/bundler.png" alt=""></p>
+<p>It's enough to deploy to production!</p>
+<h1>Development (Dev) Server</h1>
+<p>During development, you generally want a fast feedback loop. Some mechanisms that contribute to this are:</p>
+<ul>
+<li>Hot Module Reload (HMR). That's when the browser updates without refreshing (ideally maintaining the state of the app)</li>
+<li>File watching. When you save a file, the HMR triggers, updating automatically.</li>
+<li>Dev-only warnings (syntax, lint, types, a11y issues?)</li>
+</ul>
+<p>This is where a dev server is useful. They often have two parts:</p>
+<ul>
+<li>Server side component. This is functionality like file watching and trigger HMR.</li>
+<li>Client side. This is sometimes called the &quot;runtime&quot; or &quot;client bundle&quot;. It's some JavaScript that is injected in the page that handles things like responding to the HMR, loading new modules, etc.</li>
+</ul>
+<p>Vite and webpack have featureful dev servers. Both have a runtime that is injected to the browser, as well as highly configurable servers that you augment with middleware, plugins, etc.</p>
+<p>esbuild also has a simple <a href="https://esbuild.github.io/api/#serve">dev server</a>, but in my experience, people tend to use Vite, which builds on and extends esbuild.</p>
+<h1>Conclusion</h1>
+<p>This post explained each part of this diagram at a high level:</p>
+<p><img src="./toolchain/modern-toolchain.png" alt=""></p>
+<p>Each part of the toolchain has plenty to explore. Interesting in learning more and doing deeper? I'm writing a book about JavaScript tooling, where you'll build your own frontend toolchain, completely from scratch! Sign up to learn more here.</p>

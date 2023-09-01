@@ -8,6 +8,13 @@ export interface Article {
 
 export const articles: Article[] = [
   {
+    title: "Anatomy of a Modern JavaScript Toolchain",
+    slug: "anatomy-of-a-modern-javascript-toolchain",
+    published: "2023-09-01",
+    description: "Modern JavaScript toolchains are complex. This article breaks down the tools used by Vite, and how each one works.",
+    image: "https://images.unsplash.com/photo-1637929476734-bd7f5f78e40a"
+  },
+  {
     title: "Why You Should Always Use an Extension for JavaScript Files",
     slug: "why-you-should-always-use-an-extension-for-javascript-files",
     published: "2023-08-29",

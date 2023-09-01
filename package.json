@@ -19,6 +19,7 @@
   },
   "scripts": {
     "build": "tsc app/index.ts",
-    "start": "node app/index.js"
+    "start": "node app/index.js",
+    "article": "ts-node markdown/to-html.ts"
   }
 }
