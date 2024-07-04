@@ -3,6 +3,13 @@ exports.__esModule = true;
 exports.articles = void 0;
 exports.articles = [
     {
+        title: "A Simple ChIP Seq Pipeline",
+        slug: "chip-seq-pipeline",
+        published: "2024-07-04",
+        description: "I recently finished my first semester of a Masters of Bioinformatics at UQ. BINF6000 exposed me to different types of bioinformatics workflows. In this post, I share one - an ChIP Seq pipeline - and discuss what each of the tools does.",
+        image: "https://images.unsplash.com/photo-1637929476734-bd7f5f78e40a"
+    },
+    {
         title: "Anatomy of a Modern JavaScript Toolchain",
         slug: "anatomy-of-a-modern-javascript-toolchain",
         published: "2023-09-01",
@@ -132,5 +139,5 @@ exports.articles = [
         slug: "patterns-for-testing-props",
         published: "2020-09-22",
         description: "Learn about testing props in Vue apps, and how testing props can verify whether you are correctly separating your business logic and your UI."
-    }
+    },
 ];
