@@ -3,6 +3,21 @@ exports.__esModule = true;
 exports.articles = void 0;
 exports.articles = [
     {
+        title: "Types of Probability",
+        slug: "types-of-probability",
+        published: "2024-07-21",
+        description: "Some notes on probability from the BINF7000 course",
+        image: "https://images.unsplash.com/photo-1637929476734-bd7f5f78e40a"
+    },
+    // {
+    //   title: "Bayes Theorum",
+    //   slug: "bayes-theorum",
+    //   published: "2024-07-15",
+    //   description:
+    //     "I am learning some basic probability, including Bayes Theorum and Maximum Likelihood. Here's what I learned.",
+    //   image: "https://images.unsplash.com/photo-1637929476734-bd7f5f78e40a",
+    // },
+    {
         title: "A Simple ChIP Seq Pipeline",
         slug: "chip-seq-pipeline",
         published: "2024-07-04",

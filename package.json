@@ -1,8 +1,16 @@
 {
   "dependencies": {
+    "@shikijs/markdown-it": "^1.10.3",
+    "@types/execa": "^2.0.0",
+    "@types/gulp": "^4.0.17",
+    "chokidar": "^3.6.0",
     "cors": "^2.8.5",
+    "execa": "5.1.1",
     "express": "^4.17.1",
+    "gulp": "^5.0.0",
+    "markdown-it-latex": "^0.2.0",
     "pug": "^3.0.0",
+    "shiki": "^1.10.3",
     "ts-node": "^9.0.0"
   },
   "devDependencies": {
@@ -11,7 +19,7 @@
     "@types/markdown-it": "^10.0.3",
     "highlight.js": "^10.4.1",
     "jest": "^26.4.2",
-    "markdown-it": "^12.0.3",
+    "markdown-it": "^14.1.0",
     "markdown-it-highlight-lines": "^1.0.2",
     "ts-node-dev": "^1.0.0-pre.63",
     "tsd": "^0.14.0",

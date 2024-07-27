@@ -1,0 +1,63 @@
+<p>import fs from &quot;fs&quot;;
+import Shiki from &quot;@shikijs/markdown-it&quot;;
+import MarkdownIt from &quot;markdown-it&quot;;
+import path from &quot;path&quot;;
+import markdownItLatex from &quot;markdown-it-latex&quot;;
+import highlightLines from &quot;markdown-it-highlight-lines&quot;;
+import hljs from &quot;highlight.js&quot;;</p>
+<p>import * as url from &quot;url&quot;;
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL(&quot;.&quot;, import.meta.url));
+/**</p>
+<ul>
+<li>Usage:</li>
+<li>yarn ts-node markdown/to-html.ts articles/markdown/vue-pdf-custom-renderer.md
+*/</li>
+</ul>
+<p>async function main() {
+const article = process.argv.slice(2)[0];</p>
+<p>// Actual default values
+const md = MarkdownIt({
+// highlight: function (str, lang) {
+//   if (lang &amp;&amp; hljs.getLanguage(lang)) {
+//     try {
+//       return (
+//         '&lt;pre class=&quot;hljs&quot;&gt;&lt;code&gt;' +
+//         hljs.highlight(lang, str, true).value +
+//         &quot;&lt;/code&gt;&lt;/pre&gt;&quot;
+//       );
+//     } catch (__) {}
+//   }
+//   return (
+//     '&lt;pre class=&quot;hljs&quot;&gt;&lt;code&gt;' + md.utils.escapeHtml(str) + &quot;&lt;/code&gt;&lt;/pre&gt;&quot;
+//   );
+// },
+});</p>
+<p>md.use(markdownItLatex.default);</p>
+<p>md.use(
+await Shiki({
+fallbackLanguage: &quot;sh&quot;,
+themes: {
+light: &quot;github-dark&quot;,
+dark: &quot;github-dark&quot;,
+},
+})
+);</p>
+<p>md.use(highlightLines);</p>
+<p>const str = fs.readFileSync(article, &quot;utf8&quot;);
+const out = md.render(str);
+const base = path.basename(article);</p>
+<p>const name = base.replace(&quot;.md&quot;, &quot;&quot;);
+const t = path.join(
+__dirname,
+&quot;..&quot;,
+&quot;app&quot;,
+&quot;public&quot;,
+&quot;articles&quot;,
+<code>${name}.html</code>
+);
+console.log(<code>Writing to ${t}</code>);</p>
+<p>fs.writeFileSync(t, out);
+// process.stdout.write(out)
+}</p>
+<p>main();</p>
